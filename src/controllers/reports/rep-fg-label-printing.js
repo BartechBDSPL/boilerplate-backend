@@ -2,18 +2,7 @@ import { executeQuery } from '../../config/db.js';
 import { sql } from '../../config/db.js';
 
 export const reportFGPrintingdata = async (req, res) => {
-  const {
-    FrmDate,
-    ToDate,
-    ORDER_NUMBER,
-    MATERIAL,
-    BATCH,
-    Rep_Pick,
-    Rep_Put,
-    LINE,
-    TANK,
-    Shift,
-  } = req.body;
+  const { FrmDate, ToDate, ORDER_NUMBER, MATERIAL, BATCH, Rep_Pick, Rep_Put, LINE, TANK, Shift } = req.body;
 
   try {
     let query = `
@@ -59,8 +48,7 @@ export const reportFGPrintingdata = async (req, res) => {
       query += ' AND PutStatus IS NOT NULL';
     }
 
-    query +=
-      ' AND (CONVERT(date, PrintDate) BETWEEN @FrmDate AND @ToDate) ORDER BY PrintDate DESC';
+    query += ' AND (CONVERT(date, PrintDate) BETWEEN @FrmDate AND @ToDate) ORDER BY PrintDate DESC';
 
     const result = await executeQuery(query, [
       { name: 'FrmDate', type: sql.Date, value: FrmDate },

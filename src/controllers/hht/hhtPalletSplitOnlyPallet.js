@@ -74,35 +74,22 @@ export const validateExportPalletSplit = async (req, res) => {
   let { ScanBarcode } = req.body;
   try {
     try {
-      if (
-        typeof ScanBarcode === 'string' &&
-        /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)
-      ) {
-        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString(
-          'utf8'
-        );
+      if (typeof ScanBarcode === 'string' && /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)) {
+        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString('utf8');
         ScanBarcode = decodedBarcode;
       }
     } catch (decodeError) {
-      console.warn(
-        'Base64 decoding failed, using original input:',
-        decodeError
-      );
+      console.warn('Base64 decoding failed, using original input:', decodeError);
     }
 
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_Export_PalletSplit_Validation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(255), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_Export_PalletSplit_Validation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(255), value: ScanBarcode },
+    ]);
 
     const processedResult = result.map(item => ({
       ...item,
-      ORDER_NUMBER: item.ORDER_NUMBER
-        ? item.ORDER_NUMBER.replace(/^0+/, '')
-        : item.ORDER_NUMBER,
-      MATERIAL: item.MATERIAL
-        ? item.MATERIAL.replace(/^0+/, '')
-        : item.MATERIAL,
+      ORDER_NUMBER: item.ORDER_NUMBER ? item.ORDER_NUMBER.replace(/^0+/, '') : item.ORDER_NUMBER,
+      MATERIAL: item.MATERIAL ? item.MATERIAL.replace(/^0+/, '') : item.MATERIAL,
     }));
 
     res.json(processedResult);
@@ -118,39 +105,27 @@ export const exportPalletSplitUpdate = async (req, res) => {
   try {
     // Decode OldBarcode if base64
     try {
-      if (
-        typeof OldBarcode === 'string' &&
-        /^[A-Za-z0-9+/=]+$/.test(OldBarcode)
-      ) {
-        const decodedBarcode = Buffer.from(OldBarcode, 'base64').toString(
-          'utf8'
-        );
+      if (typeof OldBarcode === 'string' && /^[A-Za-z0-9+/=]+$/.test(OldBarcode)) {
+        const decodedBarcode = Buffer.from(OldBarcode, 'base64').toString('utf8');
         OldBarcode = decodedBarcode;
       }
     } catch (decodeError) {
-      console.warn(
-        'Base64 decoding failed for OldBarcode, using original input:',
-        decodeError
-      );
+      console.warn('Base64 decoding failed for OldBarcode, using original input:', decodeError);
     }
     // 1. Get Line Number
     // console.log('Fetching Line Number for Old Barcode:', OldBarcode);
-    const getLineResult = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Pallet_GetLineNumber] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: OldBarcode }]
-    );
+    const getLineResult = await executeQuery(`EXEC [dbo].[HHT_FG_Pallet_GetLineNumber] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: OldBarcode },
+    ]);
     const Line = getLineResult[0]?.Line || '';
 
     // 2. Get new barcode
-    const result1 = await executeQuery(
-      `EXEC [dbo].[HHT_PalletBarcode_Break_SrNo] @PalletBarcode`,
-      [{ name: 'PalletBarcode', type: sql.NVarChar(250), value: OldBarcode }]
-    );
+    const result1 = await executeQuery(`EXEC [dbo].[HHT_PalletBarcode_Break_SrNo] @PalletBarcode`, [
+      { name: 'PalletBarcode', type: sql.NVarChar(250), value: OldBarcode },
+    ]);
     const NewBarcode = result1[0]?.PalletBarcode;
     if (!NewBarcode) {
-      return res
-        .status(400)
-        .json({ Status: 'F', Message: 'Failed to get new barcode.' });
+      return res.status(400).json({ Status: 'F', Message: 'Failed to get new barcode.' });
     }
     console.log('New Barcode:', NewBarcode);
 
@@ -172,34 +147,25 @@ export const exportPalletSplitUpdate = async (req, res) => {
       const portNumber = parseInt(printerPort) || 9100;
       const printerInRange = await isPrinterReachable(printerIP, portNumber);
       if (!printerInRange) {
-        return res
-          .status(200)
-          .json({ Status: 'F', Message: 'Printer out of range' });
+        return res.status(200).json({ Status: 'F', Message: 'Printer out of range' });
       }
       // Get details for printing (QtyInside, PcsPerBox, etc.)
-      const printDetails = await executeQuery(
-        `EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`,
-        [{ name: 'ScanBarcode', type: sql.NVarChar, value: OldBarcode }]
-      );
+      const printDetails = await executeQuery(`EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`, [
+        { name: 'ScanBarcode', type: sql.NVarChar, value: OldBarcode },
+      ]);
       const details = printDetails[0] || {};
       const palletNumber = NewBarcode.split('|').pop()?.replace('FG', '') || '';
       const printData = {
         Material: details.MATERIAL ? details.MATERIAL.replace(/^0+/, '') : '',
         MaterialDescription: details.MATERIAL_TEXT || '',
-        PalletCount: details.PalletCount
-          ? String(details.PalletCount).replace(/^0+/, '')
-          : '',
-        QtyInside:
-          Qty ||
-          (details.PrintQty ? String(details.PrintQty).replace(/^0+/, '') : ''),
+        PalletCount: details.PalletCount ? String(details.PalletCount).replace(/^0+/, '') : '',
+        QtyInside: Qty || (details.PrintQty ? String(details.PrintQty).replace(/^0+/, '') : ''),
         PalletBarcode: NewBarcode,
         PcsPerPallet: '',
         PalletNumber: palletNumber ? palletNumber.replace(/^0+/, '') : '',
         PcsPerBox:
           details.NUMERATOR && details.DENOMINATOR
-            ? String(
-                Math.floor(details.NUMERATOR / details.DENOMINATOR)
-              ).replace(/^0+/, '')
+            ? String(Math.floor(details.NUMERATOR / details.DENOMINATOR)).replace(/^0+/, '')
             : '',
         Batch: details.BATCH ? details.BATCH.replace(/^0+/, '') : '',
         Line: Line ? String(Line).replace(/^0+/, '') : '',

@@ -1,8 +1,5 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import axios from 'axios';
 import { format, parse } from 'date-fns';
 
@@ -42,10 +39,7 @@ export const getDeliveryOrder = async (req, res) => {
 
     // console.log('SAP Request Payload:', JSON.stringify(payload, null, 2));
 
-    const response = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/picklist/details`,
-      payload
-    );
+    const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/picklist/details`, payload);
     // console.log('SAP Response:', JSON.stringify(response.data, null, 2));
     // return;
     // Check Return table for error messages
@@ -131,10 +125,7 @@ export const getDeliveryOrder = async (req, res) => {
           });
         }
       } catch (dbError) {
-        console.error(
-          `Error inserting partner ${item.VBELN} with partner function ${item.PARVW}:`,
-          dbError
-        );
+        console.error(`Error inserting partner ${item.VBELN} with partner function ${item.PARVW}:`, dbError);
         results.push({
           deliveryNo: item.VBELN,
           partnerFunction: item.PARVW,
@@ -179,9 +170,7 @@ export const getDeliveryOrder = async (req, res) => {
 
 export const getRecentMaterialTransactions = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_MaterialRequest_RecentTransaction]`
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_MaterialRequest_RecentTransaction]`);
 
     res.json(result);
   } catch (error) {
@@ -244,31 +233,15 @@ export const scanDeliveryQR = async (req, res) => {
       });
     }
 
-    const [
-      DeliveryNo,
-      CustomerNo,
-      Consignee,
-      PinCode,
-      VehicleNo,
-      LoadingPoint,
-    ] = qrParts;
+    const [DeliveryNo, CustomerNo, Consignee, PinCode, VehicleNo, LoadingPoint] = qrParts;
 
     // Step 1: Check if delivery order exists
-    const checkParams = [
-      { name: 'DeliveryNo', type: sql.NVarChar, value: DeliveryNo },
-    ];
+    const checkParams = [{ name: 'DeliveryNo', type: sql.NVarChar, value: DeliveryNo }];
 
-    const checkResult = await executeQuery(
-      'EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo',
-      checkParams
-    );
+    const checkResult = await executeQuery('EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo', checkParams);
 
     // If delivery order exists and has data, return it
-    if (
-      checkResult &&
-      checkResult.length > 0 &&
-      checkResult[0].Status === 'T'
-    ) {
+    if (checkResult && checkResult.length > 0 && checkResult[0].Status === 'T') {
       return res.status(200).json(checkResult);
     }
 
@@ -304,10 +277,7 @@ export const scanDeliveryQR = async (req, res) => {
       ],
     };
 
-    const response = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/picklist/details`,
-      payload
-    );
+    const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/picklist/details`, payload);
 
     // Check Return table for error messages
     if (response.data.Return && response.data.Return.length > 0) {
@@ -375,10 +345,7 @@ export const scanDeliveryQR = async (req, res) => {
     }
 
     // After successful insert, call Sp_Check_Delivery_OrderNo again to get the data
-    const finalResult = await executeQuery(
-      'EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo',
-      checkParams
-    );
+    const finalResult = await executeQuery('EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo', checkParams);
 
     if (finalResult && finalResult.length > 0) {
       return res.status(200).json(finalResult);

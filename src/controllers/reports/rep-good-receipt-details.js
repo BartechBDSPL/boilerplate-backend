@@ -1,17 +1,7 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const getGRDetails = async (req, res) => {
-  const {
-    ORDER_NUMBER,
-    MATERIAL,
-    MATERIAL_TEXT,
-    BATCH,
-    GRStatus,
-    FromDate,
-    Line,
-    Tank,
-    ToDate,
-  } = req.body;
+  const { ORDER_NUMBER, MATERIAL, MATERIAL_TEXT, BATCH, GRStatus, FromDate, Line, Tank, ToDate } = req.body;
 
   try {
     const result = await executeQuery(
@@ -43,10 +33,9 @@ export const getSummaryReportTillQC = async (req, res) => {
   const { ShiftDate } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_SummaryReport_TillQC] @ShiftDate`,
-      [{ name: 'ShiftDate', type: sql.Date, value: ShiftDate }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_SummaryReport_TillQC] @ShiftDate`, [
+      { name: 'ShiftDate', type: sql.Date, value: ShiftDate },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching Summary Report Till QC:', error);

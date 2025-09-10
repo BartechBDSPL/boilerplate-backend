@@ -1,9 +1,6 @@
 import cron from 'node-cron';
 import { executeQuery, sql } from '../config/db.js';
-import {
-  SAP_SERVER,
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-} from '../utils/constants.js';
+import { SAP_SERVER, SAP_CONNECTOR_MIDDLEWARE_URL } from '../utils/constants.js';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
@@ -94,10 +91,7 @@ async function executeWithRetry(operation, maxRetries = 3, delay = 5000) {
       return result;
     } catch (error) {
       lastError = error;
-      logToFile(
-        `Attempt ${attempt}/${maxRetries} failed: ${error.message}`,
-        'WARN'
-      );
+      logToFile(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`, 'WARN');
 
       if (attempt < maxRetries) {
         logToFile(`Retrying after ${delay}ms...`, 'INFO');
@@ -132,8 +126,7 @@ const moduleToStoredProcedure = {
   Quality: 'Sp_SAP_QC_ERROR_LOG_Pending',
   'Warehouse Scan': 'Sp_SAP_INWARD_ERROR_LOG_Pending',
   'Stock Transfer': 'Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Pending',
-  'Internal Movement / Stock Transfer':
-    'Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Pending',
+  'Internal Movement / Stock Transfer': 'Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Pending',
   'Delivery Order Picking': 'Sp_SAP_MATERIALPICKING_ERROR_LOG_Pending',
   'Put Away': 'Sp_SAP_PUTAWAY_ERROR_LOG_Pending',
   'WH Scrapping': 'Sp_SAP_SCRAPPING_ERROR_LOG_Pending',
@@ -180,28 +173,17 @@ async function getPendingTransactions(moduleName) {
     }
 
     if (invalidTransactions.length > 0) {
-      logToFile(
-        `Found ${invalidTransactions.length} invalid transactions for ${moduleName}`,
-        'WARN'
-      );
+      logToFile(`Found ${invalidTransactions.length} invalid transactions for ${moduleName}`, 'WARN');
     }
 
-    logToFile(
-      `${validTransactions.length} valid transactions ready for processing in ${moduleName}`
-    );
+    logToFile(`${validTransactions.length} valid transactions ready for processing in ${moduleName}`);
     // Sort by LogID if present
-    if (
-      validTransactions.length > 0 &&
-      validTransactions[0].LogID !== undefined
-    ) {
+    if (validTransactions.length > 0 && validTransactions[0].LogID !== undefined) {
       validTransactions.sort((a, b) => a.LogID - b.LogID);
     }
     return validTransactions;
   } catch (error) {
-    logToFile(
-      `Error getting pending transactions for ${moduleName}: ${error.message}`,
-      'ERROR'
-    );
+    logToFile(`Error getting pending transactions for ${moduleName}: ${error.message}`, 'ERROR');
     return [];
   }
 }
@@ -237,12 +219,8 @@ function createBatches(transactions, maxBatchSize = 50) {
 
 // Function to prepare item data for SAP request
 function prepareItemData(transaction, moduleName) {
-  const formattedMaterialNo = transaction.MATERIAL
-    ? transaction.MATERIAL.padStart(18, '0')
-    : '';
-  const formattedOrderNo = transaction.ORDER_NUMBER
-    ? transaction.ORDER_NUMBER.padStart(12, '0')
-    : '';
+  const formattedMaterialNo = transaction.MATERIAL ? transaction.MATERIAL.padStart(18, '0') : '';
+  const formattedOrderNo = transaction.ORDER_NUMBER ? transaction.ORDER_NUMBER.padStart(12, '0') : '';
 
   const itemData = {
     MATERIAL: formattedMaterialNo,
@@ -253,10 +231,7 @@ function prepareItemData(transaction, moduleName) {
     STCK_TYPE: transaction.STOCK_TYPE || 'Q',
     ITEM_TEXT:
       (transaction.PalletBarcode || transaction.SerialNo || '').length > 45
-        ? (transaction.PalletBarcode || transaction.SerialNo || '').substring(
-            0,
-            45
-          )
+        ? (transaction.PalletBarcode || transaction.SerialNo || '').substring(0, 45)
         : transaction.PalletBarcode || transaction.SerialNo || '',
     ENTRY_QNT: transaction.Qty,
     ENTRY_UOM: transaction.UNIT || transaction.UOM || 'ST',
@@ -278,12 +253,7 @@ function prepareItemData(transaction, moduleName) {
 }
 
 // Function to update database records after successful SAP processing
-async function updateDatabaseRecords(
-  transactions,
-  materialDocument,
-  moduleName,
-  createdBy
-) {
+async function updateDatabaseRecords(transactions, materialDocument, moduleName, createdBy) {
   const updatePromises = [];
 
   for (const transaction of transactions) {
@@ -311,13 +281,10 @@ async function updateDatabaseRecords(
         break;
 
       case 'Quality':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_QC_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_QC_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
 
       case 'Warehouse Scan':
@@ -342,43 +309,31 @@ async function updateDatabaseRecords(
 
       case 'Stock Transfer':
       case 'Internal Movement / Stock Transfer':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
 
       case 'Delivery Order Picking':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_MATERIALPICKING_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_MATERIALPICKING_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
 
       case 'Put Away':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_PUTAWAY_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_PUTAWAY_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
 
       case 'WH Scrapping':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_SCRAPPING_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_SCRAPPING_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
 
       case 'WH Block Or Unrestricted':
@@ -392,32 +347,23 @@ async function updateDatabaseRecords(
         break;
 
       case 'Resorting Picking':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_RESORTING_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_RESORTING_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
 
       case 'Resorting Return':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_RESORTING_RETURN_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_RESORTING_RETURN_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
       case 'Resorting Scrapping':
-        updatePromise = executeQuery(
-          `EXEC [dbo].[Sp_SAP_RESORTING_SCRAPPING_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-          [
-            { name: 'LogID', type: sql.Int, value: transaction.LogID },
-            { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
-          ]
-        );
+        updatePromise = executeQuery(`EXEC [dbo].[Sp_SAP_RESORTING_SCRAPPING_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+          { name: 'LogID', type: sql.Int, value: transaction.LogID },
+          { name: 'ProcessedBy', type: sql.NVarChar(50), value: createdBy },
+        ]);
         break;
       default:
         logToFile(`Invalid module name for update: ${moduleName}`);
@@ -434,9 +380,7 @@ async function updateDatabaseRecords(
     );
     return { success: true };
   } catch (error) {
-    logToFile(
-      `Error updating database records for ${moduleName}: ${error.message}`
-    );
+    logToFile(`Error updating database records for ${moduleName}: ${error.message}`);
     return { success: false, error: error.message };
   }
 }
@@ -453,9 +397,7 @@ async function processBatchedTransactions(transactionBatch, moduleName) {
     );
 
     // Prepare all items for SAP request
-    const itemsData = transactionBatch.map(transaction =>
-      prepareItemData(transaction, moduleName)
-    );
+    const itemsData = transactionBatch.map(transaction => prepareItemData(transaction, moduleName));
 
     // Format date for SAP
     const currentDate = new Date();
@@ -470,9 +412,7 @@ async function processBatchedTransactions(transactionBatch, moduleName) {
     const sapRequestBody = {
       ConnectionParams: SAP_SERVER,
       GOODSMVT_CODE: {
-        GM_CODE:
-          firstTransaction.GM_CODE ||
-          (moduleName === 'Warehouse Scan' ? '04' : '02'),
+        GM_CODE: firstTransaction.GM_CODE || (moduleName === 'Warehouse Scan' ? '04' : '02'),
       },
       GOODSMVT_HEADER: {
         PSTNG_DATE: formattedDate,
@@ -487,14 +427,10 @@ async function processBatchedTransactions(transactionBatch, moduleName) {
     // Call SAP API with retry logic
     const response = await executeWithRetry(
       async () => {
-        return await axios.post(
-          `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-          sapRequestBody,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 120000, // Increased timeout for batch processing
-          }
-        );
+        return await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 120000, // Increased timeout for batch processing
+        });
       },
       3,
       5000
@@ -507,10 +443,7 @@ async function processBatchedTransactions(transactionBatch, moduleName) {
       const returnMessage = sapResponse.Return[0];
 
       if (['E', 'I', 'A'].includes(returnMessage.TYPE)) {
-        logToFile(
-          `SAP error for ${moduleName} batch (${batchSize} items): ${returnMessage.MESSAGE}`,
-          'ERROR'
-        );
+        logToFile(`SAP error for ${moduleName} batch (${batchSize} items): ${returnMessage.MESSAGE}`, 'ERROR');
         return {
           success: false,
           message: returnMessage.MESSAGE || 'Error in SAP processing',
@@ -536,22 +469,14 @@ async function processBatchedTransactions(transactionBatch, moduleName) {
     // Update all database records in the batch with retry logic
     const updateResult = await executeWithRetry(
       async () => {
-        return await updateDatabaseRecords(
-          transactionBatch,
-          materialDocument,
-          moduleName,
-          createdBy
-        );
+        return await updateDatabaseRecords(transactionBatch, materialDocument, moduleName, createdBy);
       },
       3,
       2000
     );
 
     if (!updateResult.success) {
-      logToFile(
-        `Failed to update database records for ${moduleName} batch: ${updateResult.error}`,
-        'ERROR'
-      );
+      logToFile(`Failed to update database records for ${moduleName} batch: ${updateResult.error}`, 'ERROR');
       return {
         success: false,
         message: `Database update failed: ${updateResult.error}`,
@@ -575,10 +500,7 @@ async function processBatchedTransactions(transactionBatch, moduleName) {
         ? JSON.stringify(error.response.data.ModelState)
         : error.message;
 
-    logToFile(
-      `Error processing SAP batch for ${moduleName}: ${errorMessage}`,
-      'ERROR'
-    );
+    logToFile(`Error processing SAP batch for ${moduleName}: ${errorMessage}`, 'ERROR');
     return {
       success: false,
       message: `Error processing SAP batch: ${errorMessage}`,
@@ -619,13 +541,10 @@ async function processAllPendingTransactions() {
           continue;
         }
 
-        logToFile(
-          `Found ${pendingTransactions.length} pending transactions for ${moduleName}`
-        );
+        logToFile(`Found ${pendingTransactions.length} pending transactions for ${moduleName}`);
 
         // Group transactions by material, batch, movement type and storage location
-        const groupedTransactions =
-          groupTransactionsByMaterialBatchMovementType(pendingTransactions);
+        const groupedTransactions = groupTransactionsByMaterialBatchMovementType(pendingTransactions);
 
         logToFile(
           `Grouped transactions into ${groupedTransactions.size} material-batch-movement-storage groups for ${moduleName}`
@@ -634,8 +553,7 @@ async function processAllPendingTransactions() {
         // Process each group
         for (const [groupKey, groupTransactions] of groupedTransactions) {
           try {
-            const [material, batch, movementType, storageLocation] =
-              groupKey.split('_');
+            const [material, batch, movementType, storageLocation] = groupKey.split('_');
             logToFile(
               `Processing group: Material ${material}, Batch ${batch}, Movement Type ${movementType}, Storage Location ${storageLocation} - ${groupTransactions.length} transactions`
             );
@@ -656,19 +574,14 @@ async function processAllPendingTransactions() {
                   `Processing batch ${i + 1}/${batches.length} for Material ${material}, Batch ${batch[0]?.BATCH}, Movement Type ${movementType}, Storage Location ${storageLocation} - ${batch.length} items`
                 );
 
-                const result = await processBatchedTransactions(
-                  batch,
-                  moduleName
-                );
+                const result = await processBatchedTransactions(batch, moduleName);
                 moduleStats[moduleName].apiCalls++;
                 totalApiCalls++;
 
                 if (result.success) {
                   moduleStats[moduleName].processed += result.processedCount;
                   totalProcessed += result.processedCount;
-                  logToFile(
-                    `Batch ${i + 1} processed successfully: ${result.processedCount} items`
-                  );
+                  logToFile(`Batch ${i + 1} processed successfully: ${result.processedCount} items`);
                 } else {
                   // Instead of failing the entire batch, try processing individual transactions
                   logToFile(
@@ -678,16 +591,12 @@ async function processAllPendingTransactions() {
 
                   for (const singleTransaction of batch) {
                     try {
-                      const singleResult = await processBatchedTransactions(
-                        [singleTransaction],
-                        moduleName
-                      );
+                      const singleResult = await processBatchedTransactions([singleTransaction], moduleName);
                       moduleStats[moduleName].apiCalls++;
                       totalApiCalls++;
 
                       if (singleResult.success) {
-                        moduleStats[moduleName].processed +=
-                          singleResult.processedCount;
+                        moduleStats[moduleName].processed += singleResult.processedCount;
                         totalProcessed += singleResult.processedCount;
                         logToFile(
                           `Individual transaction processed successfully: LogID ${singleTransaction.LogID || singleTransaction.PalletBarcode}`
@@ -727,16 +636,12 @@ async function processAllPendingTransactions() {
 
                 for (const singleTransaction of batch) {
                   try {
-                    const singleResult = await processBatchedTransactions(
-                      [singleTransaction],
-                      moduleName
-                    );
+                    const singleResult = await processBatchedTransactions([singleTransaction], moduleName);
                     moduleStats[moduleName].apiCalls++;
                     totalApiCalls++;
 
                     if (singleResult.success) {
-                      moduleStats[moduleName].processed +=
-                        singleResult.processedCount;
+                      moduleStats[moduleName].processed += singleResult.processedCount;
                       totalProcessed += singleResult.processedCount;
                       logToFile(
                         `Individual transaction processed successfully: LogID ${singleTransaction.LogID || singleTransaction.PalletBarcode}`
@@ -767,23 +672,16 @@ async function processAllPendingTransactions() {
             // Add delay between different material-batch-movement-storage groups
             await new Promise(resolve => setTimeout(resolve, 1000));
           } catch (error) {
-            logToFile(
-              `Error processing group ${groupKey} for ${moduleName}: ${error.message}`,
-              'ERROR'
-            );
+            logToFile(`Error processing group ${groupKey} for ${moduleName}: ${error.message}`, 'ERROR');
             // Even if group processing fails, try to process each transaction individually
             for (const singleTransaction of groupTransactions) {
               try {
-                const singleResult = await processBatchedTransactions(
-                  [singleTransaction],
-                  moduleName
-                );
+                const singleResult = await processBatchedTransactions([singleTransaction], moduleName);
                 moduleStats[moduleName].apiCalls++;
                 totalApiCalls++;
 
                 if (singleResult.success) {
-                  moduleStats[moduleName].processed +=
-                    singleResult.processedCount;
+                  moduleStats[moduleName].processed += singleResult.processedCount;
                   totalProcessed += singleResult.processedCount;
                   logToFile(
                     `Individual transaction processed successfully after group error: LogID ${singleTransaction.LogID || singleTransaction.PalletBarcode}`
@@ -819,17 +717,11 @@ async function processAllPendingTransactions() {
         await new Promise(resolve => setTimeout(resolve, 3000));
       } catch (error) {
         moduleStats[moduleName].duration = new Date() - moduleStartTime;
-        logToFile(
-          `Error processing module ${moduleName}: ${error.message}`,
-          'ERROR'
-        );
+        logToFile(`Error processing module ${moduleName}: ${error.message}`, 'ERROR');
       }
     }
   } catch (error) {
-    logToFile(
-      `Critical error in processAllPendingTransactions: ${error.message}`,
-      'ERROR'
-    );
+    logToFile(`Critical error in processAllPendingTransactions: ${error.message}`, 'ERROR');
   }
 
   const totalDuration = new Date() - startTime;
@@ -859,9 +751,7 @@ async function processAllPendingTransactions() {
 // Schedule the job to run every 2 hours
 // Cron format: second(0-59) minute(0-59) hour(0-23) day_of_month(1-31) month(1-12) day_of_week(0-6)
 export const startSapTransactionCronJob = () => {
-  logToFile(
-    'Initializing SAP transaction processor cron job - scheduled to run every 2 hours'
-  );
+  logToFile('Initializing SAP transaction processor cron job - scheduled to run every 2 hours');
 
   // Schedule the cron job
   cron.schedule(
@@ -871,10 +761,7 @@ export const startSapTransactionCronJob = () => {
         logToFile('=== Cron Job Triggered ===');
         await processAllPendingTransactions();
       } catch (error) {
-        logToFile(
-          `Critical error in SAP transaction processor cron job: ${error.message}`,
-          'ERROR'
-        );
+        logToFile(`Critical error in SAP transaction processor cron job: ${error.message}`, 'ERROR');
       }
     },
     {
@@ -891,10 +778,7 @@ export const startSapTransactionCronJob = () => {
       logToFile('=== Initial Startup Run ===');
       await processAllPendingTransactions();
     } catch (error) {
-      logToFile(
-        `Error during initial SAP transaction processing: ${error.message}`,
-        'ERROR'
-      );
+      logToFile(`Error during initial SAP transaction processing: ${error.message}`, 'ERROR');
     }
   }, 5000); // Wait 5 seconds after startup
 };

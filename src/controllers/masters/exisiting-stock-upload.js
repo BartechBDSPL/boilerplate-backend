@@ -13,10 +13,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + '-' + Date.now() + path.extname(file.originalname)
-    );
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
   },
 });
 
@@ -102,9 +99,7 @@ export const uploadStock = async (req, res) => {
         ];
 
         const fileHeaders = Object.keys(data[1]);
-        const missingHeaders = requiredHeaders.filter(
-          header => !fileHeaders.includes(header)
-        );
+        const missingHeaders = requiredHeaders.filter(header => !fileHeaders.includes(header));
 
         if (missingHeaders.length > 0) {
           // Delete the file after processing

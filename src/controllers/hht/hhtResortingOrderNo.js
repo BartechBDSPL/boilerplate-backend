@@ -1,9 +1,6 @@
 import { executeQuery, sql } from '../../config/db.js';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import path from 'path';
 import net from 'net';
 import { fileURLToPath } from 'url';
@@ -70,41 +67,29 @@ export const getResOrderNo = async (req, res) => {
     const { ORDER_NUMBER, USER } = req.body;
     const orderValidation = validateOrderNumber(ORDER_NUMBER);
     if (orderValidation.error) {
-      return res
-        .status(orderValidation.status)
-        .json({ error: orderValidation.error });
+      return res.status(orderValidation.status).json({ error: orderValidation.error });
     }
-    const NUMBER = ORDER_NUMBER.startsWith('000')
-      ? ORDER_NUMBER
-      : `000${ORDER_NUMBER}`;
-    const materialResultExist = await executeQuery(
-      'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
-    const orderExist = await executeQuery(
-      'EXEC Sp_ResortingOrder_Check @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
+    const NUMBER = ORDER_NUMBER.startsWith('000') ? ORDER_NUMBER : `000${ORDER_NUMBER}`;
+    const materialResultExist = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
+    const orderExist = await executeQuery('EXEC Sp_ResortingOrder_Check @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
 
-    const resortingOrderRequestCheck = await executeQuery(
-      'EXEC Sp_ResortingOrderRequest_Check @RESORTING_ORDERNO',
-      [{ name: 'RESORTING_ORDERNO', type: sql.NVarChar, value: NUMBER }]
-    );
+    const resortingOrderRequestCheck = await executeQuery('EXEC Sp_ResortingOrderRequest_Check @RESORTING_ORDERNO', [
+      { name: 'RESORTING_ORDERNO', type: sql.NVarChar, value: NUMBER },
+    ]);
 
     if (
       resortingOrderRequestCheck[0].Status === 'F' &&
-      resortingOrderRequestCheck[0].Message.includes(
-        'Resorting Order already got picked'
-      )
+      resortingOrderRequestCheck[0].Message.includes('Resorting Order already got picked')
     ) {
       return res.status(200).json(resortingOrderRequestCheck[0]);
     }
 
     // Added: Check ResortingOrderRequest if order exists
-    if (
-      orderExist[0].Status === 'T' &&
-      resortingOrderRequestCheck[0].Status === 'T'
-    ) {
+    if (orderExist[0].Status === 'T' && resortingOrderRequestCheck[0].Status === 'T') {
       return res.status(200).json({
         resortingOrder: orderExist[0],
         resortingOrderRequest: resortingOrderRequestCheck[0],
@@ -112,41 +97,29 @@ export const getResOrderNo = async (req, res) => {
       });
     }
 
-    const { data: orderData } = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/order/details`,
-      {
-        ConnectionParams: SAP_SERVER,
-        NUMBER,
-      }
-    );
+    const { data: orderData } = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/order/details`, {
+      ConnectionParams: SAP_SERVER,
+      NUMBER,
+    });
     if (orderData.Return.MESSAGE?.includes('does not exist')) {
-      return res
-        .status(200)
-        .json({ Status: 'F', Message: orderData.Return.MESSAGE });
+      return res.status(200).json({ Status: 'F', Message: orderData.Return.MESSAGE });
     }
 
     const [posData] = orderData.PositionTable;
     const [compontData] = orderData.ComponentTable;
     console.log(compontData);
     const [headerData] = orderData.HeaderTable;
-    const operationData = orderData.OperationTable.find(
-      op => op.OPERATION_NUMBER === '0020'
-    );
+    const operationData = orderData.OperationTable.find(op => op.OPERATION_NUMBER === '0020');
 
-    const { data: materialData } = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/material/getall`,
-      {
-        ConnectionParams: SAP_SERVER,
-        Material: posData.MATERIAL,
-        Plant: posData.PROD_PLANT,
-      }
-    );
+    const { data: materialData } = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/material/getall`, {
+      ConnectionParams: SAP_SERVER,
+      Material: posData.MATERIAL,
+      Plant: posData.PROD_PLANT,
+    });
 
     const unitsValidation = validateUnits(materialData.UnitsOfMeasure);
     if (unitsValidation.error) {
-      return res
-        .status(unitsValidation.status)
-        .json({ error: unitsValidation.error });
+      return res.status(unitsValidation.status).json({ error: unitsValidation.error });
     }
     if (posData.ORDER_TYPE !== 'PP02') {
       return res.status(200).json({
@@ -288,10 +261,7 @@ export const getResOrderNo = async (req, res) => {
         ]
       );
 
-      if (
-        materialResult[0].Message ===
-        'Error occurred while inserting data into Sub_Material_Master.'
-      ) {
+      if (materialResult[0].Message === 'Error occurred while inserting data into Sub_Material_Master.') {
         return res.status(500).json(materialResult);
       }
     }
@@ -438,10 +408,9 @@ export const getResOrderNo = async (req, res) => {
       return res.status(500).json(insertResult);
     }
 
-    const finalResult = await executeQuery(
-      'EXEC Sp_ResortingOrder_Check @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
+    const finalResult = await executeQuery('EXEC Sp_ResortingOrder_Check @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
 
     // Added: Final check of ResortingOrderRequest
     const finalResortingOrderRequestCheck = await executeQuery(
@@ -449,17 +418,13 @@ export const getResOrderNo = async (req, res) => {
       [{ name: 'RESORTING_ORDERNO', type: sql.NVarChar, value: NUMBER }]
     );
 
-    const materialResult = await executeQuery(
-      'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
+    const materialResult = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
     if (finalResortingOrderRequestCheck[0].Status === 'F') {
       return res.status(200).json(finalResortingOrderRequestCheck[0]);
     }
-    if (
-      finalResult[0].Status === 'T' &&
-      finalResortingOrderRequestCheck[0].Status === 'T'
-    ) {
+    if (finalResult[0].Status === 'T' && finalResortingOrderRequestCheck[0].Status === 'T') {
       return res.status(200).json({
         resortingOrder: orderExist[0],
         resortingOrderRequest: finalResortingOrderRequestCheck[0],
@@ -517,10 +482,7 @@ export const updateResortingLabelPrinting = async (req, res) => {
     // Execute initial operations concurrently
     const serialNumbers = SerialNo.split('$');
     const printQuantities = PrintQty.split('$');
-    const totalPrintedQty = printQuantities.reduce(
-      (sum, qty) => sum + (parseInt(qty) || 0),
-      0
-    );
+    const totalPrintedQty = printQuantities.reduce((sum, qty) => sum + (parseInt(qty) || 0), 0);
 
     // Initialize SAP operation tracking
     let sapError = false;
@@ -532,39 +494,33 @@ export const updateResortingLabelPrinting = async (req, res) => {
     let upsertSrNoResult, upsertBoxNoResult, upsertPalletNoResult;
     if (OrderType === 'BOX') {
       [upsertSrNoResult, upsertBoxNoResult] = await Promise.all([
-        executeQuery(
-          'EXEC Sp_Upsert_FG_Label_SrNo @Order_Number, @Batch, @Material, @GeneratedSrNo',
-          [
-            {
-              name: 'Order_Number',
-              type: sql.NVarChar(255),
-              value: ORDER_NUMBER,
-            },
-            { name: 'Batch', type: sql.NVarChar(255), value: BATCH },
-            { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
-            {
-              name: 'GeneratedSrNo',
-              type: sql.Int,
-              value: parseInt(Printed_Labels),
-            },
-          ]
-        ),
-        executeQuery(
-          'EXEC Sp_Upsert_FG_Label_BoxNo @Order_Number, @Material, @GeneratedBoxNo',
-          [
-            {
-              name: 'Order_Number',
-              type: sql.NVarChar(255),
-              value: ORDER_NUMBER,
-            },
-            { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
-            {
-              name: 'GeneratedBoxNo',
-              type: sql.Int,
-              value: parseInt(Printed_Labels),
-            },
-          ]
-        ),
+        executeQuery('EXEC Sp_Upsert_FG_Label_SrNo @Order_Number, @Batch, @Material, @GeneratedSrNo', [
+          {
+            name: 'Order_Number',
+            type: sql.NVarChar(255),
+            value: ORDER_NUMBER,
+          },
+          { name: 'Batch', type: sql.NVarChar(255), value: BATCH },
+          { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
+          {
+            name: 'GeneratedSrNo',
+            type: sql.Int,
+            value: parseInt(Printed_Labels),
+          },
+        ]),
+        executeQuery('EXEC Sp_Upsert_FG_Label_BoxNo @Order_Number, @Material, @GeneratedBoxNo', [
+          {
+            name: 'Order_Number',
+            type: sql.NVarChar(255),
+            value: ORDER_NUMBER,
+          },
+          { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
+          {
+            name: 'GeneratedBoxNo',
+            type: sql.Int,
+            value: parseInt(Printed_Labels),
+          },
+        ]),
       ]);
     } else if (OrderType === 'PALLET') {
       upsertPalletNoResult = await executeQuery(
@@ -607,9 +563,7 @@ export const updateResortingLabelPrinting = async (req, res) => {
 
     // Check results of concurrent operations
     if (
-      (OrderType === 'BOX' &&
-        (upsertSrNoResult[0].Status === 'F' ||
-          upsertBoxNoResult[0].Status === 'F')) ||
+      (OrderType === 'BOX' && (upsertSrNoResult[0].Status === 'F' || upsertBoxNoResult[0].Status === 'F')) ||
       (OrderType === 'PALLET' && upsertPalletNoResult[0].Status === 'F') ||
       updateLabelCount[0].Status === 'F'
     ) {
@@ -672,9 +626,7 @@ export const updateResortingLabelPrinting = async (req, res) => {
 
       if (!materialDocument) {
         sapError = true;
-        errorMessage =
-          sapResponse.Return?.[0]?.MESSAGE ||
-          'Failed to get material document number from SAP';
+        errorMessage = sapResponse.Return?.[0]?.MESSAGE || 'Failed to get material document number from SAP';
         console.error('SAP Good Issue failed:', errorMessage);
 
         // Log the good issue error
@@ -777,10 +729,7 @@ export const updateResortingLabelPrinting = async (req, res) => {
       );
     }
 
-    const tempFilePath = path.join(
-      __dirname,
-      `combined_temp_${Date.now()}.prn`
-    );
+    const tempFilePath = path.join(__dirname, `combined_temp_${Date.now()}.prn`);
     let combinedPrnContent = '';
 
     try {
@@ -788,11 +737,7 @@ export const updateResortingLabelPrinting = async (req, res) => {
       const totalLabels = serialNumbers.length;
 
       // Process all batches sequentially
-      for (
-        let batchStart = 0;
-        batchStart < totalLabels;
-        batchStart += batchSize
-      ) {
+      for (let batchStart = 0; batchStart < totalLabels; batchStart += batchSize) {
         const batchEnd = Math.min(batchStart + batchSize, totalLabels);
         const currentBatch = serialNumbers.slice(batchStart, batchEnd);
         const currentQtyBatch = printQuantities.slice(batchStart, batchEnd);
@@ -972,8 +917,7 @@ export const updateResortingLabelPrinting = async (req, res) => {
       Message: responseMessage,
       error: error.message,
       ErrorInSAP: typeof sapError !== 'undefined' ? sapError : false,
-      SapMessage:
-        typeof sapError !== 'undefined' && sapError ? errorMessage : null,
+      SapMessage: typeof sapError !== 'undefined' && sapError ? errorMessage : null,
     });
   }
 };
@@ -985,20 +929,15 @@ export const getResortingOrderForPrinting = async (req, res) => {
   //     return res.status(orderValidation.status).json({ error: orderValidation.error });
   // }
   const NUMBER = ORDER_NUMBER;
-  const materialResultExist = await executeQuery(
-    'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-    [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-  );
-  const orderExist = await executeQuery(
-    'EXEC Sp_ResortingOrder_Check @OrderNumber',
-    [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-  );
+  const materialResultExist = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+    { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+  ]);
+  const orderExist = await executeQuery('EXEC Sp_ResortingOrder_Check @OrderNumber', [
+    { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+  ]);
 
   // Added: Check ResortingOrderRequest if order exists
-  if (
-    orderExist[0].REMAINING_LABELS === 0 &&
-    orderExist[0].PRINTED_LABELS !== 0
-  ) {
+  if (orderExist[0].REMAINING_LABELS === 0 && orderExist[0].PRINTED_LABELS !== 0) {
     return res.status(200).json({
       OrderDetails: {
         Status: 'T',
@@ -1089,9 +1028,7 @@ export const validateSerialNo = async (req, res) => {
         params
       );
     } else {
-      return res
-        .json({ Status: 'F', Message: 'Invalid Barcode scanned' })
-        .status(200);
+      return res.json({ Status: 'F', Message: 'Invalid Barcode scanned' }).status(200);
     }
     res.json(result[0]);
   } catch (error) {
@@ -1103,14 +1040,11 @@ export const validateSerialNo = async (req, res) => {
 export const updateResortingOrderType = async (req, res) => {
   const { OrderNumber, Batch, OrderType } = req.body;
   try {
-    const result = await executeQuery(
-      'EXEC Sp_Update_ResortingOrderType @OrderNumber, @Batch, @OrderType',
-      [
-        { name: 'OrderNumber', type: sql.NVarChar(255), value: OrderNumber },
-        { name: 'Batch', type: sql.NVarChar(50), value: Batch },
-        { name: 'OrderType', type: sql.NVarChar(100), value: OrderType },
-      ]
-    );
+    const result = await executeQuery('EXEC Sp_Update_ResortingOrderType @OrderNumber, @Batch, @OrderType', [
+      { name: 'OrderNumber', type: sql.NVarChar(255), value: OrderNumber },
+      { name: 'Batch', type: sql.NVarChar(50), value: Batch },
+      { name: 'OrderType', type: sql.NVarChar(100), value: OrderType },
+    ]);
     res.json(result[0]);
   } catch (error) {
     console.error('Error updating ResortingOrderType:', error);
@@ -1120,9 +1054,7 @@ export const updateResortingOrderType = async (req, res) => {
 
 export const getRecentResortingTransactions = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_ResortingOrderRequest_RecentTransaction]`
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_ResortingOrderRequest_RecentTransaction]`);
     res.json(result);
   } catch (error) {
     console.error('Error fetching recent resorting transactions:', error);
@@ -1134,10 +1066,9 @@ export const getUnqiqueOrderNo = async (req, res) => {
   const { UserName } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC HHT_FGPick_ResortingPendingOrders @UserName',
-      [{ name: 'UserName', type: sql.NVarChar, value: UserName }]
-    );
+    const result = await executeQuery('EXEC HHT_FGPick_ResortingPendingOrders @UserName', [
+      { name: 'UserName', type: sql.NVarChar, value: UserName },
+    ]);
     // Transform the result to remove leading zeros from OrderNo
     const transformedResult = result.map(item => ({
       OrderNo: item.OrderNo.replace(/^0+/, ''),
@@ -1151,22 +1082,17 @@ export const getUnqiqueOrderNo = async (req, res) => {
 export const fgPickOrderNOGetData = async (req, res) => {
   const { OrderNo, UserName } = req.body;
   try {
-    const result = await executeQuery(
-      'EXEC HHT_FGPick_ResortingOrderNoGetData @OrderNo, @UserName',
-      [
-        {
-          name: 'OrderNo',
-          type: sql.NVarChar,
-          value: OrderNo.padStart(12, '0'),
-        },
-        { name: 'UserName', type: sql.NVarChar, value: UserName },
-      ]
-    );
+    const result = await executeQuery('EXEC HHT_FGPick_ResortingOrderNoGetData @OrderNo, @UserName', [
+      {
+        name: 'OrderNo',
+        type: sql.NVarChar,
+        value: OrderNo.padStart(12, '0'),
+      },
+      { name: 'UserName', type: sql.NVarChar, value: UserName },
+    ]);
     const processedResult = result.map(item => ({
       ...item,
-      PickedDate: item.PickedDate
-        ? moment(item.PickedDate).format('DD-MM-YYYY')
-        : null,
+      PickedDate: item.PickedDate ? moment(item.PickedDate).format('DD-MM-YYYY') : null,
     }));
     console.log('Processed Result:', processedResult);
     res.json(processedResult);
@@ -1180,10 +1106,9 @@ export const orderNoGetAllData = async (req, res) => {
   const { UserName } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC HHT_FGPick_ResortingOrderNoGetDataALL @UserName',
-      [{ name: 'UserName', type: sql.NVarChar, value: UserName }]
-    );
+    const result = await executeQuery('EXEC HHT_FGPick_ResortingOrderNoGetDataALL @UserName', [
+      { name: 'UserName', type: sql.NVarChar, value: UserName },
+    ]);
     res.json(result);
   } catch (error) {
     console.error(error);
@@ -1193,9 +1118,7 @@ export const orderNoGetAllData = async (req, res) => {
 
 export const getClosedResortingOrders = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_ResortingOrderClosed]`
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FGPick_ResortingOrderClosed]`);
     res.json(result);
   } catch (error) {
     console.error('Error fetching closed resorting orders:', error);
@@ -1204,8 +1127,7 @@ export const getClosedResortingOrders = async (req, res) => {
 };
 
 export const updateResortingOrderRequest = async (req, res) => {
-  const { ResortingOrderNo, Material, Batch, AssignUser, AssignedBy } =
-    req.body;
+  const { ResortingOrderNo, Material, Batch, AssignUser, AssignedBy } = req.body;
 
   try {
     const result = await executeQuery(
@@ -1287,30 +1209,22 @@ export const getResortingOrderNumberForWebPrinting = async (req, res) => {
   const { ORDER_NUMBER, USER } = req.body;
   const orderValidation = validateOrderNumber(ORDER_NUMBER);
   if (orderValidation.error) {
-    return res
-      .status(orderValidation.status)
-      .json({ error: orderValidation.error });
+    return res.status(orderValidation.status).json({ error: orderValidation.error });
   }
   const NUMBER = orderValidation.value;
-  const materialResultExist = await executeQuery(
-    'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-    [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-  );
-  const orderExist = await executeQuery(
-    'EXEC Sp_ResortingOrder_Check @OrderNumber',
-    [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-  );
+  const materialResultExist = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+    { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+  ]);
+  const orderExist = await executeQuery('EXEC Sp_ResortingOrder_Check @OrderNumber', [
+    { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+  ]);
 
-  const resortingOrderRequestCheck = await executeQuery(
-    'EXEC Sp_ResortingOrderRequest_Check @RESORTING_ORDERNO',
-    [{ name: 'RESORTING_ORDERNO', type: sql.NVarChar, value: NUMBER }]
-  );
+  const resortingOrderRequestCheck = await executeQuery('EXEC Sp_ResortingOrderRequest_Check @RESORTING_ORDERNO', [
+    { name: 'RESORTING_ORDERNO', type: sql.NVarChar, value: NUMBER },
+  ]);
 
   // Added: Check ResortingOrderRequest if order exists
-  if (
-    orderExist[0].Status === 'T' &&
-    resortingOrderRequestCheck[0].Status === 'T'
-  ) {
+  if (orderExist[0].Status === 'T' && resortingOrderRequestCheck[0].Status === 'T') {
     return res.status(200).json({
       resortingOrder: orderExist[0],
       resortingOrderRequest: resortingOrderRequestCheck[0],
@@ -1321,15 +1235,12 @@ export const getResortingOrderNumberForWebPrinting = async (req, res) => {
 export const checkResortingMaterialPickOrder = async (req, res) => {
   const { Batch } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_Resorting_MaterialPickCheckOrder] @Batch`,
-      [{ name: 'Batch', type: sql.NVarChar(50), value: Batch }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FGPick_Resorting_MaterialPickCheckOrder] @Batch`, [
+      { name: 'Batch', type: sql.NVarChar(50), value: Batch },
+    ]);
     const formattedResult = result.map(item => ({
       ...item,
-      MATERIAL: item.MATERIAL
-        ? item.MATERIAL.replace(/^0+/, '')
-        : item.MATERIAL,
+      MATERIAL: item.MATERIAL ? item.MATERIAL.replace(/^0+/, '') : item.MATERIAL,
       PRODUCTION_START_DATE: item.PRODUCTION_START_DATE
         ? moment(item.PRODUCTION_START_DATE).format('YYYY-MM-DD')
         : null,

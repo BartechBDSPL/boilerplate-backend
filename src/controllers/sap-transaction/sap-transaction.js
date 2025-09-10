@@ -1,8 +1,5 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_SERVER,
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-} from '../../utils/constants.js';
+import { SAP_SERVER, SAP_CONNECTOR_MIDDLEWARE_URL } from '../../utils/constants.js';
 import axios from 'axios';
 
 export const getSapTransactionModuleName = async (req, res) => {
@@ -30,10 +27,7 @@ export const getPedndingSapTransaction = async (req, res) => {
       storedProcedure = 'Sp_SAP_QC_ERROR_LOG_Pending';
     } else if (ModuleName === 'Warehouse Scan') {
       storedProcedure = 'Sp_SAP_INWARD_ERROR_LOG_Pending';
-    } else if (
-      ModuleName === 'Stock Transfer' ||
-      ModuleName === 'Internal Movement / Stock Transfer'
-    ) {
+    } else if (ModuleName === 'Stock Transfer' || ModuleName === 'Internal Movement / Stock Transfer') {
       storedProcedure = 'Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Pending';
     } else if (ModuleName === 'Delivery Order Picking') {
       storedProcedure = 'Sp_SAP_MATERIALPICKING_ERROR_LOG_Pending';
@@ -103,8 +97,7 @@ export const updateSapTransactionDetails = async (req, res) => {
   try {
     // Format material and order number as needed for SAP
     const formattedMaterialNo = MATERIAL.padStart(18, '0');
-    const formattedOrderNo =
-      ORDER_NUMBER === '' ? '' : ORDER_NUMBER.padStart(12, '0');
+    const formattedOrderNo = ORDER_NUMBER === '' ? '' : ORDER_NUMBER.padStart(12, '0');
 
     // Prepare the item for SAP request
     const itemData = {
@@ -114,10 +107,7 @@ export const updateSapTransactionDetails = async (req, res) => {
       BATCH: BATCH,
       MOVE_TYPE: MOVEMENT_TYPE || '101',
       STCK_TYPE: STOCK_TYPE || 'Q',
-      ITEM_TEXT:
-        PalletBarcode.length > 45
-          ? PalletBarcode.substring(0, 45)
-          : PalletBarcode,
+      ITEM_TEXT: PalletBarcode.length > 45 ? PalletBarcode.substring(0, 45) : PalletBarcode,
       ENTRY_QNT: Qty,
       ENTRY_UOM: UNIT || 'ST',
       ENTRY_UOM_ISO: UNIT_ISO || 'PCE',
@@ -160,14 +150,10 @@ export const updateSapTransactionDetails = async (req, res) => {
     };
 
     // Call SAP API
-    const response = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-      sapRequestBody,
-      {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 60000,
-      }
-    );
+    const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 60000,
+    });
     const sapResponse = response.data;
 
     // Check for errors in SAP response
@@ -214,13 +200,10 @@ export const updateSapTransactionDetails = async (req, res) => {
         ]
       );
     } else if (Module_Name === 'Quality') {
-      updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_SAP_QC_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-        [
-          { name: 'LogID', type: sql.Int, value: LogID },
-          { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
-        ]
-      );
+      updateResult = await executeQuery(`EXEC [dbo].[Sp_SAP_QC_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+        { name: 'LogID', type: sql.Int, value: LogID },
+        { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
+      ]);
 
       return res.status(200).json({
         Status: 'T',
@@ -246,17 +229,11 @@ export const updateSapTransactionDetails = async (req, res) => {
           },
         ]
       );
-    } else if (
-      Module_Name === 'Stock Transfer' ||
-      Module_Name === 'Internal Movement / Stock Transfer'
-    ) {
-      updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-        [
-          { name: 'LogID', type: sql.Int, value: LogID },
-          { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
-        ]
-      );
+    } else if (Module_Name === 'Stock Transfer' || Module_Name === 'Internal Movement / Stock Transfer') {
+      updateResult = await executeQuery(`EXEC [dbo].[Sp_SAP_INTERNALMOVEMENT_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+        { name: 'LogID', type: sql.Int, value: LogID },
+        { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
+      ]);
       return res.status(200).json({
         Status: 'T',
         Message: `Successfully processed Internal Movement / Stock Transfer transaction. Material Document: ${materialDocument}`,
@@ -264,13 +241,10 @@ export const updateSapTransactionDetails = async (req, res) => {
         UpdateResult: updateResult,
       });
     } else if (Module_Name === 'Delivery Order Picking') {
-      updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_SAP_MATERIALPICKING_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-        [
-          { name: 'LogID', type: sql.Int, value: LogID },
-          { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
-        ]
-      );
+      updateResult = await executeQuery(`EXEC [dbo].[Sp_SAP_MATERIALPICKING_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+        { name: 'LogID', type: sql.Int, value: LogID },
+        { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
+      ]);
       return res.status(200).json({
         Status: 'T',
         Message: `Successfully processed Delivery Order Picking transaction. Material Document: ${materialDocument}`,
@@ -278,13 +252,10 @@ export const updateSapTransactionDetails = async (req, res) => {
         UpdateResult: updateResult,
       });
     } else if (Module_Name === 'Put Away') {
-      updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_SAP_PUTAWAY_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-        [
-          { name: 'LogID', type: sql.Int, value: LogID },
-          { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
-        ]
-      );
+      updateResult = await executeQuery(`EXEC [dbo].[Sp_SAP_PUTAWAY_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+        { name: 'LogID', type: sql.Int, value: LogID },
+        { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
+      ]);
       return res.status(200).json({
         Status: 'T',
         Message: `Successfully processed Putaway transaction. Material Document: ${materialDocument}`,
@@ -292,13 +263,10 @@ export const updateSapTransactionDetails = async (req, res) => {
         UpdateResult: updateResult,
       });
     } else if (Module_Name === 'WH Scrapping') {
-      updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_SAP_SCRAPPING_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-        [
-          { name: 'LogID', type: sql.Int, value: LogID },
-          { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
-        ]
-      );
+      updateResult = await executeQuery(`EXEC [dbo].[Sp_SAP_SCRAPPING_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+        { name: 'LogID', type: sql.Int, value: LogID },
+        { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
+      ]);
       return res.status(200).json({
         Status: 'T',
         Message: `Successfully processed Scrapping transaction. Material Document: ${materialDocument}`,
@@ -320,13 +288,10 @@ export const updateSapTransactionDetails = async (req, res) => {
         UpdateResult: updateResult,
       });
     } else if (Module_Name === 'Resorting Picking') {
-      updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_SAP_RESORTING_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-        [
-          { name: 'LogID', type: sql.Int, value: LogID },
-          { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
-        ]
-      );
+      updateResult = await executeQuery(`EXEC [dbo].[Sp_SAP_RESORTING_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+        { name: 'LogID', type: sql.Int, value: LogID },
+        { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
+      ]);
       return res.status(200).json({
         Status: 'T',
         Message: `Successfully processed Resorting Picking transaction. Material Document: ${materialDocument}`,
@@ -334,13 +299,10 @@ export const updateSapTransactionDetails = async (req, res) => {
         UpdateResult: updateResult,
       });
     } else if (Module_Name === 'Resorting Return') {
-      updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_SAP_RESORTING_RETURN_ERROR_LOG_Update] @LogID, @ProcessedBy`,
-        [
-          { name: 'LogID', type: sql.Int, value: LogID },
-          { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
-        ]
-      );
+      updateResult = await executeQuery(`EXEC [dbo].[Sp_SAP_RESORTING_RETURN_ERROR_LOG_Update] @LogID, @ProcessedBy`, [
+        { name: 'LogID', type: sql.Int, value: LogID },
+        { name: 'ProcessedBy', type: sql.NVarChar(50), value: CreatedBy },
+      ]);
       return res.status(200).json({
         Status: 'T',
         Message: `Successfully processed Resorting Return transaction. Material Document: ${materialDocument}`,

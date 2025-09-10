@@ -17,18 +17,8 @@ export const getLineDataByPlant = async (req, res) => {
 };
 
 export const insertPrinter = async (req, res) => {
-  const {
-    PlantCode,
-    DeviceName,
-    DeviceSrNo,
-    DeviceIp,
-    DeviceMake,
-    AssetCode,
-    Status,
-    Createdby,
-    dpi,
-    LineCode,
-  } = req.body;
+  const { PlantCode, DeviceName, DeviceSrNo, DeviceIp, DeviceMake, AssetCode, Status, Createdby, dpi, LineCode } =
+    req.body;
 
   try {
     const result = await executeQuery(
@@ -124,10 +114,9 @@ export const getPrinterByPlantCode = async (req, res) => {
   const { PlantCode } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC sp_printer_get_printer @plant_code',
-      [{ name: 'plant_code', type: sql.NVarChar(50), value: PlantCode }]
-    );
+    const result = await executeQuery('EXEC sp_printer_get_printer @plant_code', [
+      { name: 'plant_code', type: sql.NVarChar(50), value: PlantCode },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -140,10 +129,9 @@ export const getDefaultPrinterByPlantCode = async (req, res) => {
   const { PlantCode } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC sp_printer_get_printer_default @plant_code',
-      [{ name: 'plant_code', type: sql.NVarChar(50), value: PlantCode }]
-    );
+    const result = await executeQuery('EXEC sp_printer_get_printer_default @plant_code', [
+      { name: 'plant_code', type: sql.NVarChar(50), value: PlantCode },
+    ]);
 
     res.json(result);
   } catch (error) {

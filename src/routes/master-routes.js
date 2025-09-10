@@ -18,39 +18,15 @@ import * as TransporterMasterController from '../controllers/masters/transporter
 const router = express.Router();
 
 // Company Master
-router.get(
-  '/company/all-details',
-  auth,
-  companyMasterController.getAllCompanyDetails
-);
-router.patch(
-  '/company/update-details',
-  auth,
-  companyMasterController.updateCompanyDetails
-);
-router.post(
-  '/company/insert-details',
-  auth,
-  companyMasterController.insertCompanyDetails
-);
+router.get('/company/all-details', auth, companyMasterController.getAllCompanyDetails);
+router.patch('/company/update-details', auth, companyMasterController.updateCompanyDetails);
+router.post('/company/insert-details', auth, companyMasterController.insertCompanyDetails);
 
 // Plant Master
 router.get('/company/names', auth, plantMasterController.getAllCompanyName);
-router.post(
-  '/plant/insert-details',
-  auth,
-  plantMasterController.insertAllDetails
-);
-router.get(
-  '/plant/all-details',
-  auth,
-  plantMasterController.getAllDetailsPlantMaster
-);
-router.patch(
-  '/plant/update-details',
-  auth,
-  plantMasterController.updateDetails
-);
+router.post('/plant/insert-details', auth, plantMasterController.insertAllDetails);
+router.get('/plant/all-details', auth, plantMasterController.getAllDetailsPlantMaster);
+router.patch('/plant/update-details', auth, plantMasterController.updateDetails);
 router.get('/plant/codes', auth, plantMasterController.getAllPlantCodes);
 
 //UOM Master
@@ -60,21 +36,9 @@ router.post('/insert-uom-details', auth, UOMMaster.insertUom);
 router.patch('/update-uom-details', auth, UOMMaster.updateUom);
 
 //Warehouse Category Master
-router.post(
-  '/insert-warehouse-category',
-  auth,
-  whCategoryMaster.insertWhCategory
-);
-router.get(
-  '/get-all-warehouse-category',
-  auth,
-  whCategoryMaster.getAllWarehouseCategory
-);
-router.patch(
-  '/update-warehouse-category',
-  auth,
-  whCategoryMaster.updateWarehouseCategory
-);
+router.post('/insert-warehouse-category', auth, whCategoryMaster.insertWhCategory);
+router.get('/get-all-warehouse-category', auth, whCategoryMaster.getAllWarehouseCategory);
+router.patch('/update-warehouse-category', auth, whCategoryMaster.updateWarehouseCategory);
 
 //Warehouse Master
 router.get('/get-all-plant-code', auth, whMaster.getAllPlantCode);
@@ -87,65 +51,25 @@ router.get('/get-all-wh-code', auth, WhLocationMaster.getAllWhCode);
 router.get('/get-all-wh-location', auth, WhLocationMaster.getAllDetails);
 router.post('/insert-wh-location', auth, WhLocationMaster.insertDetails);
 router.patch('/update-wh-location', auth, WhLocationMaster.updateDetails);
-router.post(
-  '/upload-wh-location-excel',
-  auth,
-  WhLocationMaster.uploadWhLocationExcel
-);
+router.post('/upload-wh-location-excel', auth, WhLocationMaster.uploadWhLocationExcel);
 
 //Material Master
-router.get(
-  '/get-all-material-details',
-  auth,
-  MaterialMaster.getAllMaterialDetails
-);
-router.post(
-  '/insert-material-details',
-  auth,
-  MaterialMaster.insertMaterialDetails
-);
-router.patch(
-  '/update-material-details',
-  auth,
-  MaterialMaster.updateMaterialDetails
-);
+router.get('/get-all-material-details', auth, MaterialMaster.getAllMaterialDetails);
+router.post('/insert-material-details', auth, MaterialMaster.insertMaterialDetails);
+router.patch('/update-material-details', auth, MaterialMaster.updateMaterialDetails);
 router.get('/get-all-mat-code', auth, MaterialMaster.getAllMaterialCode);
 
 // Material Master Exisiting Data
-router.post(
-  '/post-material-master',
-  auth,
-  MaterialMasterExisiting.postMaterialMaster
-);
+router.post('/post-material-master', auth, MaterialMasterExisiting.postMaterialMaster);
 // Material Master Existing Stock Upload
-router.post(
-  '/upload-material-existing-stock',
-  auth,
-  MaterialExistingStockUpload.uploadMaterialExistingStock
-);
-router.get(
-  '/get-all-material-existing-stock',
-  auth,
-  MaterialExistingStockUpload.getAllMaterialUploaded
-);
-router.post(
-  '/insert-material-existing-stock',
-  auth,
-  MaterialExistingStockUpload.insertMaterialExistingStock
-);
-router.post(
-  '/update-material-existing-stock',
-  auth,
-  MaterialExistingStockUpload.updateMaterialExistingStock
-);
+router.post('/upload-material-existing-stock', auth, MaterialExistingStockUpload.uploadMaterialExistingStock);
+router.get('/get-all-material-existing-stock', auth, MaterialExistingStockUpload.getAllMaterialUploaded);
+router.post('/insert-material-existing-stock', auth, MaterialExistingStockUpload.insertMaterialExistingStock);
+router.post('/update-material-existing-stock', auth, MaterialExistingStockUpload.updateMaterialExistingStock);
 
 // Existing Stock Upload
 router.post('/upload-existing-stock', auth, ExistingStockUpload.uploadStock);
-router.get(
-  '/get-all-existing-stock',
-  auth,
-  ExistingStockUpload.getAllStockUploaded
-);
+router.get('/get-all-existing-stock', auth, ExistingStockUpload.getAllStockUploaded);
 
 //Line Master
 router.get('/get-all-line', auth, lineMaster.getAllLineMaster);
@@ -155,26 +79,10 @@ router.get('/get-all-plant-name', auth, lineMaster.getPlantName);
 //TO get all plant code use -> get-all-plant-code
 
 //Pallet Master
-router.post(
-  '/insert-pallet-master',
-  auth,
-  PalletMasterController.insertPalletMaster
-);
-router.post(
-  '/update-pallet-master',
-  auth,
-  PalletMasterController.updatePalletMaster
-);
-router.post(
-  '/pallet-barcode-exist',
-  auth,
-  PalletMasterController.checkPalletBarcode
-);
-router.get(
-  '/pallet-all-details',
-  auth,
-  PalletMasterController.getAllPalletMasterDetails
-);
+router.post('/insert-pallet-master', auth, PalletMasterController.insertPalletMaster);
+router.post('/update-pallet-master', auth, PalletMasterController.updatePalletMaster);
+router.post('/pallet-barcode-exist', auth, PalletMasterController.checkPalletBarcode);
+router.get('/pallet-all-details', auth, PalletMasterController.getAllPalletMasterDetails);
 
 // Printer Master
 router.post('/insert-printer', auth, PrinterMasterController.insertPrinter);
@@ -188,20 +96,8 @@ router.post('/update-shift', auth, ShiftMasterController.updateShift);
 router.get('/get-all-shift', auth, ShiftMasterController.getAllShift);
 
 // Transporter Master
-router.post(
-  '/insert-transporter',
-  auth,
-  TransporterMasterController.insertTransporter
-);
-router.post(
-  '/update-transporter',
-  auth,
-  TransporterMasterController.updateTransporter
-);
-router.get(
-  '/get-all-transporter',
-  auth,
-  TransporterMasterController.getAllTransporters
-);
+router.post('/insert-transporter', auth, TransporterMasterController.insertTransporter);
+router.post('/update-transporter', auth, TransporterMasterController.updateTransporter);
+router.get('/get-all-transporter', auth, TransporterMasterController.getAllTransporters);
 
 export default router;

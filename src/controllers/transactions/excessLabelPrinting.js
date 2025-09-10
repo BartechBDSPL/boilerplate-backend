@@ -54,10 +54,9 @@ export const getExcessProductionOrderDetails = async (req, res) => {
   const { OrderNumber } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_GetExcessProductionOrderDetails] @OrderNumber`,
-      [{ name: 'OrderNumber', type: sql.NVarChar(100), value: OrderNumber }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_GetExcessProductionOrderDetails] @OrderNumber`, [
+      { name: 'OrderNumber', type: sql.NVarChar(100), value: OrderNumber },
+    ]);
     // console.log(result)
     res.json(result);
   } catch (error) {

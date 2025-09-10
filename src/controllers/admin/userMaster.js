@@ -12,19 +12,8 @@ export const getAllUserDetails = async (req, res) => {
 };
 
 export const updateUserDetails = async (req, res) => {
-  const {
-    User_ID,
-    User_Name,
-    User_Role,
-    Status,
-    Locked,
-    UpdatedBy,
-    PassExpDays,
-    PlantCode,
-    Line,
-    EmailId,
-    MobileNo,
-  } = req.body;
+  const { User_ID, User_Name, User_Role, Status, Locked, UpdatedBy, PassExpDays, PlantCode, Line, EmailId, MobileNo } =
+    req.body;
 
   try {
     const result = await executeQuery(

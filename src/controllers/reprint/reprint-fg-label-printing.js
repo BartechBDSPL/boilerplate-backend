@@ -10,8 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const getFGLabelPrintData = async (req, res) => {
-  const { OrderNo, Material, Batch, Line, Tank, Shift, FrmDate, ToDate } =
-    req.body;
+  const { OrderNo, Material, Batch, Line, Tank, Shift, FrmDate, ToDate } = req.body;
 
   try {
     const fgLabelPrintData = await executeQuery(
@@ -156,9 +155,7 @@ export const insertFGLabelPrintingData = async (req, res) => {
 
       res.json({ ...dbResult, printCount });
     } else {
-      res
-        .status(400)
-        .json({ Status: 'F', Message: 'Database insertion failed' });
+      res.status(400).json({ Status: 'F', Message: 'Database insertion failed' });
     }
   } catch (error) {
     console.error(error);
@@ -216,11 +213,7 @@ function printToTscPrinter(prnFilePath, ip, port) {
 
           if (err) {
             console.error('Error sending print job:', err);
-            reject(
-              new Error(
-                'Failed to send print job. Please check printer connection.'
-              )
-            );
+            reject(new Error('Failed to send print job. Please check printer connection.'));
           } else {
             resolve();
           }
@@ -243,11 +236,7 @@ function printToTscPrinter(prnFilePath, ip, port) {
       } catch (cleanupError) {
         console.error('Error cleaning up temporary file:', cleanupError);
       }
-      reject(
-        new Error(
-          'Printer is not in network. Please try again or update printer master.'
-        )
-      );
+      reject(new Error('Printer is not in network. Please try again or update printer master.'));
     });
 
     client.on('error', err => {
@@ -261,11 +250,7 @@ function printToTscPrinter(prnFilePath, ip, port) {
       } catch (cleanupError) {
         console.error('Error cleaning up temporary file:', cleanupError);
       }
-      reject(
-        new Error(
-          'Printer is not in network. Please try again or update printer master.'
-        )
-      );
+      reject(new Error('Printer is not in network. Please try again or update printer master.'));
     });
   });
 }

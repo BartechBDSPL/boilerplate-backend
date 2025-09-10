@@ -14,6 +14,7 @@ import reprintRoutes from './routes/reprintRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import resortingRoutes from './routes/reesortingRoutes.js';
 import sapTransactionRoutes from './routes/sapTransaction.js';
+import sessionManager from './utils/sessionManager.js';
 
 dotenv.config();
 
@@ -76,6 +77,10 @@ startServer();
 
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
+
+  // Shutdown session manager
+  sessionManager.shutdown();
+
   // await closeDatabases();
   process.exit(0);
 });

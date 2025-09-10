@@ -45,9 +45,7 @@ export const approveExcessProductionOrder = async (req, res) => {
 
 export const getRecentRequestedApprovalOrder = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[SP_Recent_ExcessApprovalOrders]`
-    );
+    const result = await executeQuery(`EXEC [dbo].[SP_Recent_ExcessApprovalOrders]`);
 
     res.json(result);
   } catch (error) {
@@ -58,9 +56,7 @@ export const getRecentRequestedApprovalOrder = async (req, res) => {
 
 export const getPendingExcessApprovalOrders = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[SP_ExcessApprovalOrders_Pending]`
-    );
+    const result = await executeQuery(`EXEC [dbo].[SP_ExcessApprovalOrders_Pending]`);
 
     res.json(result);
   } catch (error) {

@@ -4,59 +4,48 @@ import * as ChangePassword from '../controllers/admin/changePassword.js';
 import * as UserRoleMaster from '../controllers/admin/userRoleMaster.js';
 import * as androidAccessController from '../controllers/admin/androidAccess.js';
 import * as SessionMaster from '../controllers/admin/sessionMaster.js';
+import * as SessionController from '../controllers/admin/sessionController.js';
 import auth from '../middleware/auth.js';
+import { authWithSession } from '../middleware/authWithSession.js';
 
 const router = express.Router();
 
 //User Master
-router.get('/all-user-master', auth, UserMaster.getAllUserDetails);
-router.post('/insert-user-master', auth, UserMaster.insertUserDetails);
-router.patch('/edit-user-master', auth, UserMaster.updateUserDetails);
-router.get('/get-all-user-type', auth, UserMaster.getAllUserTypeDD);
+router.get('/all-user-master', authWithSession, UserMaster.getAllUserDetails);
+router.post('/insert-user-master', authWithSession, UserMaster.insertUserDetails);
+router.patch('/edit-user-master', authWithSession, UserMaster.updateUserDetails);
+router.get('/get-all-user-type', authWithSession, UserMaster.getAllUserTypeDD);
 
 //Change Password
 router.post('/change-password', auth, ChangePassword.changePassword);
 
-//User Role Master\
-router.post('/insert-user-role', auth, UserRoleMaster.insertUserRole);
-router.patch('/update-user-role', auth, UserRoleMaster.updateUserRoles);
-router.get('/get-all-user-role', auth, UserRoleMaster.getAllUserType);
+//User Role Master
+router.post('/insert-user-role', authWithSession, UserRoleMaster.insertUserRole);
+router.patch('/update-user-role', authWithSession, UserRoleMaster.updateUserRoles);
+router.get('/get-all-user-role', authWithSession, UserRoleMaster.getAllUserType);
 
 //Android Access
-router.patch(
-  '/edit-hht-user',
-  auth,
-  androidAccessController.editHHTRegisterStatus
-);
-router.post(
-  '/get-hht-user-specific',
-  auth,
-  androidAccessController.getHHTRegisterSpecific
-);
-router.post('/add-hht-req', androidAccessController.addHHTRegisterRequest);
-router.get(
-  '/get-all-hht-req',
-  auth,
-  androidAccessController.getAllRegisterHHTDevice
-);
-router.post(
-  '/update-android-access',
-  auth,
-  androidAccessController.updateAndroidAccess
-);
-router.get(
-  '/get-pending-approvals',
-  auth,
-  androidAccessController.getPendingApprovals
-);
+router.patch('/edit-hht-user', authWithSession, androidAccessController.editHHTRegisterStatus);
+router.post('/get-hht-user-specific', authWithSession, androidAccessController.getHHTRegisterSpecific);
+router.post('/add-hht-req', androidAccessController.addHHTRegisterRequest); // No auth needed for registration
+router.get('/get-all-hht-req', authWithSession, androidAccessController.getAllRegisterHHTDevice);
+router.post('/update-android-access', authWithSession, androidAccessController.updateAndroidAccess);
+router.get('/get-pending-approvals', authWithSession, androidAccessController.getPendingApprovals);
 
 // //Register Routes
 // router.post('/register-user',registerController.insertAndroidAccess);
 // router.post('/update-user',registerController.updateAndroidAccessStatus);
 
 //Session Master
-router.get('/get-all-session-master', auth, SessionMaster.getAllDetails);
-router.post('/insert-session-master', auth, SessionMaster.insertDetails);
-router.patch('/update-session-master', auth, SessionMaster.updateDetails);
+router.get('/get-all-session-master', authWithSession, SessionMaster.getAllDetails);
+router.patch('/update-session-master', authWithSession, SessionMaster.updateDetails);
+
+//Session Management
+router.post('/logout', authWithSession, SessionController.handleLogout);
+router.get('/session-status', authWithSession, SessionController.getSessionStatus);
+router.get('/active-sessions', authWithSession, SessionController.getActiveSessions);
+router.post('/cleanup-sessions', authWithSession, SessionController.cleanupSessions);
+router.get('/session-config', authWithSession, SessionController.getSessionConfig);
+router.post('/refresh-session-config', authWithSession, SessionController.refreshSessionConfig);
 
 export default router;

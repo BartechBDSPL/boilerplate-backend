@@ -4,9 +4,7 @@ import { sql } from '../../config/db.js';
 // Get all company names from Company Master
 export const getAllCompanyName = async (req, res) => {
   try {
-    const getAllNames = await executeQuery(
-      'EXEC sp_company_master_get_company_name'
-    );
+    const getAllNames = await executeQuery('EXEC sp_company_master_get_company_name');
     res.json(getAllNames);
   } catch (error) {
     console.error(error);
@@ -16,16 +14,7 @@ export const getAllCompanyName = async (req, res) => {
 
 // Insert details into Plant Master
 export const insertAllDetails = async (req, res) => {
-  const {
-    companyCode,
-    plantCode,
-    plantName,
-    address,
-    city,
-    state,
-    plantStatus,
-    createdBy,
-  } = req.body;
+  const { companyCode, plantCode, plantName, address, city, state, plantStatus, createdBy } = req.body;
   try {
     const insertDetails = await executeQuery(
       'EXEC sp_plant_master_insert @company_code, @plant_code, @plant_name, @address, @city, @state, @plant_status, @created_by, @barcode',
@@ -53,16 +42,7 @@ export const insertAllDetails = async (req, res) => {
 
 // Update details in Plant Master
 export const updateDetails = async (req, res) => {
-  const {
-    plantId,
-    plantCode,
-    plantName,
-    address,
-    city,
-    state,
-    plantStatus,
-    updatedBy,
-  } = req.body;
+  const { plantId, plantCode, plantName, address, city, state, plantStatus, updatedBy } = req.body;
   try {
     const updateDetails = await executeQuery(
       'EXEC sp_plant_master_update @plant_id, @plant_code, @plant_name, @address, @city, @state, @plant_status, @updated_by',
@@ -90,9 +70,7 @@ export const updateDetails = async (req, res) => {
 // Get all details for plant master - To show in the table
 export const getAllDetailsPlantMaster = async (req, res) => {
   try {
-    const getAllDetailsPlantMaster = await executeQuery(
-      'EXEC sp_plant_master_get_all_details'
-    );
+    const getAllDetailsPlantMaster = await executeQuery('EXEC sp_plant_master_get_all_details');
     res.json(getAllDetailsPlantMaster);
   } catch (error) {
     console.error(error);
@@ -103,9 +81,7 @@ export const getAllDetailsPlantMaster = async (req, res) => {
 // Get all plant codes
 export const getAllPlantCodes = async (req, res) => {
   try {
-    const getAllPlantCodes = await executeQuery(
-      'EXEC sp_plant_master_get_plant_codes'
-    );
+    const getAllPlantCodes = await executeQuery('EXEC sp_plant_master_get_plant_codes');
     res.json(getAllPlantCodes);
   } catch (error) {
     console.error(error);

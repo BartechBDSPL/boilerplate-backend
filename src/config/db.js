@@ -52,9 +52,7 @@ async function executeQuery(query, params = {}) {
     const request = mainPool.request();
 
     if (Array.isArray(params)) {
-      params.forEach(param =>
-        request.input(param.name, param.type, param.value)
-      );
+      params.forEach(param => request.input(param.name, param.type, param.value));
     } else {
       for (const [name, { type, value }] of Object.entries(params)) {
         request.input(name, type, value);
@@ -78,9 +76,7 @@ async function executeQueryExisiting(query, params = {}) {
     const request = mainPool.request();
 
     if (Array.isArray(params)) {
-      params.forEach(param =>
-        request.input(param.name, param.type, param.value)
-      );
+      params.forEach(param => request.input(param.name, param.type, param.value));
     } else {
       for (const [name, { type, value }] of Object.entries(params)) {
         request.input(name, type, value);
@@ -105,9 +101,7 @@ async function executeUpdateQuery(query, params = {}) {
     const request = customerPool.request();
 
     if (Array.isArray(params)) {
-      params.forEach(param =>
-        request.input(param.name, param.type, param.value)
-      );
+      params.forEach(param => request.input(param.name, param.type, param.value));
     } else {
       for (const [name, { type, value }] of Object.entries(params)) {
         request.input(name, type, value);
@@ -138,11 +132,4 @@ async function closeDatabases() {
   }
 }
 
-export {
-  sql,
-  initializeDatabases,
-  executeQuery,
-  closeDatabases,
-  executeUpdateQuery,
-  executeQueryExisiting,
-};
+export { sql, initializeDatabases, executeQuery, closeDatabases, executeUpdateQuery, executeQueryExisiting };

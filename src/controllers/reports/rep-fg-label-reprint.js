@@ -1,17 +1,7 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const getRePrintFGLabelDetails = async (req, res) => {
-  const {
-    ORDER_NUMBER,
-    MATERIAL,
-    MATERIAL_TEXT,
-    BATCH,
-    Line,
-    Tank,
-    Shift,
-    FromDate,
-    ToDate,
-  } = req.body;
+  const { ORDER_NUMBER, MATERIAL, MATERIAL_TEXT, BATCH, Line, Tank, Shift, FromDate, ToDate } = req.body;
 
   try {
     const result = await executeQuery(

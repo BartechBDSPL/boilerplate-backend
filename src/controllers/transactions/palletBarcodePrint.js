@@ -1,17 +1,7 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const getFGLabelBarcodeInfo = async (req, res) => {
-  const {
-    FromDate,
-    ToDate,
-    ORDERNO,
-    User,
-    MATERIAL,
-    BATCH,
-    LINE,
-    TANK,
-    Shift,
-  } = req.body;
+  const { FromDate, ToDate, ORDERNO, User, MATERIAL, BATCH, LINE, TANK, Shift } = req.body;
 
   try {
     const paddedORDERNO = ORDERNO ? ORDERNO.padStart(12, '0') : '';

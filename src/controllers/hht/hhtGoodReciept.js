@@ -1,18 +1,14 @@
 import { executeQuery, sql } from '../../config/db.js';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import { format } from 'date-fns';
 
 export const inwardPalletBarcodeValidation = async (req, res) => {
   const { ScanBarcode } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_GR_Pallet_BarcodeValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_GR_Pallet_BarcodeValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -26,10 +22,9 @@ export const inwardBarcodeValidation = async (req, res) => {
   // console.log(req.body)
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_GR_BarcodeValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_GR_BarcodeValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
     // console.log("Checking",result)
     res.json(result);
   } catch (error) {
@@ -57,9 +52,7 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
     const unitValues = UNIT ? UNIT.split('$') : [];
     const unitIsoValues = UNIT_ISO ? UNIT_ISO.split('$') : [];
 
-    const palletGroups = V_ScanBarcodes.split('*').filter(group =>
-      group.trim()
-    );
+    const palletGroups = V_ScanBarcodes.split('*').filter(group => group.trim());
 
     // Process each pallet group
     for (let i = 0; i < palletGroups.length; i++) {
@@ -91,16 +84,13 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
 
             if (OrderNo.length !== 9) {
               try {
-                const palletDetails = await executeQuery(
-                  `EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`,
-                  [
-                    {
-                      name: 'ScanBarcode',
-                      type: sql.NVarChar,
-                      value: currentPalletBarcode,
-                    },
-                  ]
-                );
+                const palletDetails = await executeQuery(`EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`, [
+                  {
+                    name: 'ScanBarcode',
+                    type: sql.NVarChar,
+                    value: currentPalletBarcode,
+                  },
+                ]);
 
                 if (palletDetails && palletDetails.length > 0) {
                   OrderNo = palletDetails[0].ORDER_NUMBER || OrderNo;
@@ -174,14 +164,10 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
       };
 
       try {
-        const response = await axios.post(
-          `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-          sapRequestBody,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 60000,
-          }
-        );
+        const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 60000,
+        });
 
         const sapResponse = response.data;
         const materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
@@ -308,9 +294,7 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
         }
 
         if (!materialDocument) {
-          const errorMessage =
-            sapResponse.Return[0]?.MESSAGE ||
-            'Failed to get material document number from SAP';
+          const errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
           for (const item of itemsBatch) {
             await executeQuery(
               `EXEC [dbo].[Sp_SAP_GR_ERROR_LOG_Insert] 
@@ -428,8 +412,7 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
         materialDocuments.push(materialDocument);
       } catch (axiosError) {
         const errorMessage =
-          axiosError.response?.data?.Message ||
-          axiosError.response?.data?.ModelState
+          axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
             ? JSON.stringify(axiosError.response.data.ModelState)
             : axiosError.message;
 
@@ -550,10 +533,7 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
         Status: 'T', // Changed to T to indicate process continues despite SAP errors
         Message: `GR Done but SAP pending⚠️ - errors: ${errorMessages.join('; ')}`,
         ProcessedCount: allSerialNumbers.length,
-        TotalQuantity: Array.from(palletQuantities.values()).reduce(
-          (a, b) => a + b,
-          0
-        ),
+        TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
         MaterialDocument: '',
         AllDocuments: [],
         PartialFailures: true,
@@ -565,9 +545,7 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
 
     let updatedCount = 0;
     // Only update serials for successful batches (ones without error handling above)
-    const successSerials = allSerialNumbers.filter(
-      sn => !errorMessages.some(err => sn.palletBarcode.includes(err))
-    );
+    const successSerials = allSerialNumbers.filter(sn => !errorMessages.some(err => sn.palletBarcode.includes(err)));
 
     for (let i = 0; i < successSerials.length; i += batchSize) {
       const serialBatch = successSerials.slice(i, i + batchSize);
@@ -612,10 +590,7 @@ export const goodReceieptBarcodeUpdate = async (req, res) => {
       Status: 'T',
       Message: responseMessage,
       ProcessedCount: updatedCount,
-      TotalQuantity: Array.from(palletQuantities.values()).reduce(
-        (a, b) => a + b,
-        0
-      ),
+      TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
       MaterialDocument: primaryMaterialDocument,
       AllDocuments: materialDocuments,
       PartialFailures: errorMessages.length > 0,

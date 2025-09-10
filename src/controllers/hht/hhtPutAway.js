@@ -1,23 +1,17 @@
 import { executeQuery, sql } from '../../config/db.js';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import { format } from 'date-fns';
 
 export const putCheckValidLocation = async (req, res) => {
   const { PlantCode, Location, WHCat } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Put_CheckValidLocation_N] @PlantCode, @Location, @WHCat`,
-      [
-        { name: 'PlantCode', type: sql.NVarChar(50), value: PlantCode },
-        { name: 'Location', type: sql.VarChar(100), value: Location },
-        { name: 'WHCat', type: sql.NVarChar(50), value: WHCat },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_Put_CheckValidLocation_N] @PlantCode, @Location, @WHCat`, [
+      { name: 'PlantCode', type: sql.NVarChar(50), value: PlantCode },
+      { name: 'Location', type: sql.VarChar(100), value: Location },
+      { name: 'WHCat', type: sql.NVarChar(50), value: WHCat },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error checking valid location:', error);
@@ -28,14 +22,11 @@ export const putCheckValidLocation = async (req, res) => {
 export const putLocationSuggestion = async (req, res) => {
   const { PlantCode, WHCategory, UserName } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Put_LocationSuggestion] @PlantCode, @WHCategory, @UserName`,
-      [
-        { name: 'PlantCode', type: sql.NVarChar(50), value: PlantCode },
-        { name: 'WHCategory', type: sql.NVarChar(50), value: WHCategory },
-        { name: 'UserName', type: sql.NVarChar(50), value: UserName },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_Put_LocationSuggestion] @PlantCode, @WHCategory, @UserName`, [
+      { name: 'PlantCode', type: sql.NVarChar(50), value: PlantCode },
+      { name: 'WHCategory', type: sql.NVarChar(50), value: WHCategory },
+      { name: 'UserName', type: sql.NVarChar(50), value: UserName },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -64,16 +55,11 @@ export const putBarcodeValidation = async (req, res) => {
 
 export const getWarehouseCodeDescConcat = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_WarhouseCodeDescConcat]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_WarhouseCodeDescConcat]`, []);
     res.json(result);
   } catch (error) {
     console.error('Error concatenating warehouse code and description:', error);
-    res
-      .status(500)
-      .json({ error: 'Failed to concatenate warehouse code and description' });
+    res.status(500).json({ error: 'Failed to concatenate warehouse code and description' });
   }
 };
 
@@ -98,16 +84,7 @@ export const putPalletBarcodeValidation = async (req, res) => {
 };
 
 export const putBarcodeDataUpdate = async (req, res) => {
-  const {
-    V_ScanBarcodes,
-    UserId,
-    PlantCode,
-    Location,
-    BinNo,
-    UNIT = 'ST',
-    UNIT_ISO = 'PCE',
-    isExisting,
-  } = req.body;
+  const { V_ScanBarcodes, UserId, PlantCode, Location, BinNo, UNIT = 'ST', UNIT_ISO = 'PCE', isExisting } = req.body;
   console.log(req.body);
   try {
     if (!V_ScanBarcodes) {
@@ -123,9 +100,7 @@ export const putBarcodeDataUpdate = async (req, res) => {
     let goodsmvtItems = [];
     let errorMessages = [];
 
-    const palletGroups = V_ScanBarcodes.split('*').filter(group =>
-      group.trim()
-    );
+    const palletGroups = V_ScanBarcodes.split('*').filter(group => group.trim());
     const isExistingValues = isExisting ? isExisting.split('$') : [];
 
     // Process each pallet group
@@ -147,9 +122,7 @@ export const putBarcodeDataUpdate = async (req, res) => {
           }
 
           if (serialList) {
-            const serials = currentIsExisting
-              ? [serialList]
-              : serialList.split('$').filter(s => s);
+            const serials = currentIsExisting ? [serialList] : serialList.split('$').filter(s => s);
             const currentPalletBarcode = pallet;
             const parsedQuantity = parseFloat(quantity || 0);
 
@@ -160,16 +133,13 @@ export const putBarcodeDataUpdate = async (req, res) => {
             let Batch = '';
 
             try {
-              const palletDetails = await executeQuery(
-                `EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`,
-                [
-                  {
-                    name: 'ScanBarcode',
-                    type: sql.NVarChar,
-                    value: currentPalletBarcode,
-                  },
-                ]
-              );
+              const palletDetails = await executeQuery(`EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`, [
+                {
+                  name: 'ScanBarcode',
+                  type: sql.NVarChar,
+                  value: currentPalletBarcode,
+                },
+              ]);
 
               if (palletDetails && palletDetails.length > 0) {
                 OrderNo = palletDetails[0].ORDER_NUMBER || OrderNo;
@@ -195,9 +165,7 @@ export const putBarcodeDataUpdate = async (req, res) => {
               SPEC_STOCK: '',
               MVT_IND: '',
               ITEM_TEXT:
-                currentPalletBarcode.length > 45
-                  ? currentPalletBarcode.substring(0, 45)
-                  : currentPalletBarcode,
+                currentPalletBarcode.length > 45 ? currentPalletBarcode.substring(0, 45) : currentPalletBarcode,
               ENTRY_QNT: parsedQuantity,
               ENTRY_UOM: UNIT,
               ENTRY_UOM_ISO: UNIT_ISO,
@@ -238,14 +206,10 @@ export const putBarcodeDataUpdate = async (req, res) => {
       };
 
       try {
-        const response = await axios.post(
-          `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-          sapRequestBody,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 30000,
-          }
-        );
+        const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 30000,
+        });
 
         const sapResponse = response.data;
         materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
@@ -360,9 +324,7 @@ export const putBarcodeDataUpdate = async (req, res) => {
         }
 
         if (!materialDocument) {
-          const errorMessage =
-            sapResponse.Return[0]?.MESSAGE ||
-            'Failed to get material document number from SAP';
+          const errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
           errorMessages.push(errorMessage);
 
           // Log error for each item that failed
@@ -470,8 +432,7 @@ export const putBarcodeDataUpdate = async (req, res) => {
         });
 
         const errorMessage =
-          axiosError.response?.data?.Message ||
-          axiosError.response?.data?.ModelState
+          axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
             ? JSON.stringify(axiosError.response.data.ModelState)
             : axiosError.message;
 
@@ -622,10 +583,7 @@ export const putBarcodeDataUpdate = async (req, res) => {
       Status: 'T',
       Message: responseMessage,
       ProcessedCount: allSerialNumbers.length,
-      TotalQuantity: Array.from(palletQuantities.values()).reduce(
-        (a, b) => a + b,
-        0
-      ),
+      TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
       MaterialDocument: materialDocument,
       PartialFailures: errorMessages.length > 0,
       ErrorMessages: errorMessages.length > 0 ? errorMessages : undefined,

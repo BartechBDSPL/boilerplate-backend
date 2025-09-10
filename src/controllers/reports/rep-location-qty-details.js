@@ -21,10 +21,9 @@ export const getLocationQtyDetails = async (req, res) => {
 
   try {
     // Execute the stored procedure to get the data
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_RepLocationQtyDetails] @Location`,
-      [{ name: 'Location', type: sql.NVarChar(255), value: Location }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_RepLocationQtyDetails] @Location`, [
+      { name: 'Location', type: sql.NVarChar(255), value: Location },
+    ]);
 
     // Initialize variables for the desired metrics
     let distinctOrderCount = 0;

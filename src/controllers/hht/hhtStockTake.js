@@ -3,15 +3,10 @@ import { executeQuery, sql } from '../../config/db.js';
 export const getStockTakeNo = async (req, res) => {
   const { StockType } = req.body;
 
-  const params = [
-    { name: 'StockType', type: sql.NVarChar(50), value: StockType },
-  ];
+  const params = [{ name: 'StockType', type: sql.NVarChar(50), value: StockType }];
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_StockTakeNo_Get] @StockType`,
-      params
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_StockTakeNo_Get] @StockType`, params);
     res.json(result[0]);
   } catch (error) {
     console.error('Error fetching stock take number:', error);
@@ -28,10 +23,7 @@ export const validateStockTakePallet = async (req, res) => {
   ];
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_StockTake_PalletValidate] @ScanBarcode, @StockNo`,
-      params
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_StockTake_PalletValidate] @ScanBarcode, @StockNo`, params);
 
     res.json(result[0]);
   } catch (error) {
@@ -94,16 +86,11 @@ export const getRecentStockTakeDetails = async (req, res) => {
   const params = [{ name: 'StockNo', type: sql.NVarChar(50), value: StockNo }];
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_StockTake_RecentDetails] @StockNo`,
-      params
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_StockTake_RecentDetails] @StockNo`, params);
 
     res.json(result);
   } catch (error) {
     console.error('Error fetching recent stock take details:', error);
-    res
-      .status(500)
-      .json({ error: 'Failed to fetch recent stock take details' });
+    res.status(500).json({ error: 'Failed to fetch recent stock take details' });
   }
 };

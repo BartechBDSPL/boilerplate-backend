@@ -1,8 +1,7 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const getQCDetails = async (req, res) => {
-  const { ORDER_NUMBER, MATERIAL, BATCH, QCStatus, FromDate, ToDate } =
-    req.body;
+  const { ORDER_NUMBER, MATERIAL, BATCH, QCStatus, FromDate, ToDate } = req.body;
 
   try {
     const result = await executeQuery(

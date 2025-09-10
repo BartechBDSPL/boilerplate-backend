@@ -1,8 +1,7 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const insertShift = async (req, res) => {
-  const { Shift_Name, Shift_Description, FromTime, ToTime, Created_By } =
-    req.body;
+  const { Shift_Name, Shift_Description, FromTime, ToTime, Created_By } = req.body;
 
   try {
     const result = await executeQuery(
@@ -33,8 +32,7 @@ export const insertShift = async (req, res) => {
 };
 
 export const updateShift = async (req, res) => {
-  const { Shift_Name, Shift_Description, FromTime, ToTime, Updated_By } =
-    req.body;
+  const { Shift_Name, Shift_Description, FromTime, ToTime, Updated_By } = req.body;
 
   try {
     const result = await executeQuery(

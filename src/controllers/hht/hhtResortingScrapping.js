@@ -2,10 +2,7 @@ import sql from 'mssql';
 import { executeQuery } from '../../config/db.js';
 import { format } from 'date-fns';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 
 export const insertResortingScrapDetails = async (req, res) => {
   const {
@@ -65,14 +62,10 @@ export const insertResortingScrapDetails = async (req, res) => {
     };
 
     try {
-      const response = await axios.post(
-        `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-        sapRequestBody,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 60000,
-        }
-      );
+      const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 60000,
+      });
       // console.log('SAP API Response Status:', response.status);
       // console.log('SAP API Response Data:', JSON.stringify(response.data, null, 2));
       const sapResponse = response.data;
@@ -88,16 +81,12 @@ export const insertResortingScrapDetails = async (req, res) => {
       }
       if (!materialDocument && !sapError) {
         sapError = true;
-        sapErrorMessage =
-          sapResponse.Return?.[0]?.MESSAGE ||
-          'Failed to get material document number from SAP';
+        sapErrorMessage = sapResponse.Return?.[0]?.MESSAGE || 'Failed to get material document number from SAP';
       }
     } catch (error) {
       sapError = true;
       sapErrorMessage =
-        error.response?.data?.Message ||
-        error.response?.data?.error ||
-        `SAP API Error: ${error.message}`;
+        error.response?.data?.Message || error.response?.data?.error || `SAP API Error: ${error.message}`;
     }
 
     // Log errors to database if SAP transaction failed

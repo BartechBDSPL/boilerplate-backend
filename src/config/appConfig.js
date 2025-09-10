@@ -12,8 +12,7 @@ export const CONFIG = {
 
     companyWebsite: 'https://bartechdata.net',
 
-    logoUrl:
-      'https://bartechdata.net/wp-content/webp-express/webp-images/themes/bartech/images/logo.png.webp',
+    logoUrl: 'https://bartechdata.net/wp-content/webp-express/webp-images/themes/bartech/images/logo.png.webp',
   },
 
   company: {
@@ -45,9 +44,7 @@ export const updateConfig = (section, updates) => {
 export const getComplaintTrackingUrl = (serialNo, id) => {
   const baseUrl = CONFIG.urls.complaintTracking;
 
-  const cleanSerialNo = serialNo
-    .toString()
-    .replace(/[#%^{}[\]<>]/g, encodeURIComponent);
+  const cleanSerialNo = serialNo.toString().replace(/[#%^{}[\]<>]/g, encodeURIComponent);
   const cleanId = id.toString().replace(/[#%^{}[\]<>]/g, encodeURIComponent);
 
   return `${baseUrl}?serialNo=${cleanSerialNo}&id=${cleanId}`;

@@ -1,24 +1,19 @@
 import { executeQuery, sql } from '../../config/db.js';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import { format } from 'date-fns';
 
 export const inwardPalletBarcodeValidation = async (req, res) => {
   const { ScanBarcode } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Inward_Pallet_BarcodeValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_Inward_Pallet_BarcodeValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
 
     try {
-      const qcResult = await executeQuery(
-        `EXEC [dbo].[HHT_QcStatus_PalletBarcode] @PalletBarcode`,
-        [{ name: 'PalletBarcode', type: sql.NVarChar, value: ScanBarcode }]
-      );
+      const qcResult = await executeQuery(`EXEC [dbo].[HHT_QcStatus_PalletBarcode] @PalletBarcode`, [
+        { name: 'PalletBarcode', type: sql.NVarChar, value: ScanBarcode },
+      ]);
 
       const qcStatus = qcResult[0]?.QCStatus || null;
 
@@ -37,17 +32,15 @@ export const inwardBarcodeValidation = async (req, res) => {
   const { ScanBarcode } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Inward_BarcodeValidation]  @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_Inward_BarcodeValidation]  @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
 
     // Get QC status for serial barcode
     try {
-      const qcResult = await executeQuery(
-        `EXEC [dbo].[HHT_QcStatus_SerialNo] @SerialNo`,
-        [{ name: 'SerialNo', type: sql.NVarChar, value: ScanBarcode }]
-      );
+      const qcResult = await executeQuery(`EXEC [dbo].[HHT_QcStatus_SerialNo] @SerialNo`, [
+        { name: 'SerialNo', type: sql.NVarChar, value: ScanBarcode },
+      ]);
 
       const qcStatus = qcResult[0]?.QCStatus || null;
 
@@ -63,15 +56,7 @@ export const inwardBarcodeValidation = async (req, res) => {
 };
 
 export const inwardBarcodeDataUpdate = async (req, res) => {
-  const {
-    V_ScanBarcodes,
-    UserId,
-    UNIT,
-    UNIT_ISO,
-    storageLocation,
-    Approve,
-    QC,
-  } = req.body;
+  const { V_ScanBarcodes, UserId, UNIT, UNIT_ISO, storageLocation, Approve, QC } = req.body;
 
   try {
     if (!V_ScanBarcodes) {
@@ -94,9 +79,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
     const unitIsoValues = UNIT_ISO ? UNIT_ISO.split('$') : [];
     const qcValues = QC ? QC.split('$') : [];
 
-    const palletGroups = V_ScanBarcodes.split('*').filter(group =>
-      group.trim()
-    );
+    const palletGroups = V_ScanBarcodes.split('*').filter(group => group.trim());
 
     // Process each pallet group
     for (let i = 0; i < palletGroups.length; i++) {
@@ -129,16 +112,13 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
 
             if (OrderNo.length !== 9) {
               try {
-                const palletDetails = await executeQuery(
-                  `EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`,
-                  [
-                    {
-                      name: 'ScanBarcode',
-                      type: sql.NVarChar,
-                      value: currentPalletBarcode,
-                    },
-                  ]
-                );
+                const palletDetails = await executeQuery(`EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`, [
+                  {
+                    name: 'ScanBarcode',
+                    type: sql.NVarChar,
+                    value: currentPalletBarcode,
+                  },
+                ]);
 
                 if (palletDetails && palletDetails.length > 0) {
                   OrderNo = palletDetails[0].ORDER_NUMBER || OrderNo;
@@ -355,9 +335,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
 
             // Also log the same errors for corresponding items in goodsmvtItems
             for (const item of goodsmvtItems) {
-              const matchingQCItem = goodsmvtItemsQC.find(
-                qcItem => qcItem.ITEM_TEXT === item.ITEM_TEXT
-              );
+              const matchingQCItem = goodsmvtItemsQC.find(qcItem => qcItem.ITEM_TEXT === item.ITEM_TEXT);
               if (matchingQCItem) {
                 await executeQuery(
                   `EXEC [dbo].[Sp_SAP_INWARD_ERROR_LOG_Insert] 
@@ -468,8 +446,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
 
         if (!qcMaterialDocument) {
           const errorMessage =
-            qcSapResponse.Return[0]?.MESSAGE ||
-            'Failed to get material document number for QC transaction';
+            qcSapResponse.Return[0]?.MESSAGE || 'Failed to get material document number for QC transaction';
           errorMessages.push(errorMessage);
 
           // Log error for QC items
@@ -565,9 +542,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
 
           // Also log for corresponding main movement items
           for (const item of goodsmvtItems) {
-            const matchingQCItem = goodsmvtItemsQC.find(
-              qcItem => qcItem.ITEM_TEXT === item.ITEM_TEXT
-            );
+            const matchingQCItem = goodsmvtItemsQC.find(qcItem => qcItem.ITEM_TEXT === item.ITEM_TEXT);
             if (matchingQCItem) {
               await executeQuery(
                 `EXEC [dbo].[Sp_SAP_INWARD_ERROR_LOG_Insert] 
@@ -774,9 +749,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
 
         // Also log for corresponding main movement items
         for (const item of goodsmvtItems) {
-          const matchingQCItem = goodsmvtItemsQC.find(
-            qcItem => qcItem.ITEM_TEXT === item.ITEM_TEXT
-          );
+          const matchingQCItem = goodsmvtItemsQC.find(qcItem => qcItem.ITEM_TEXT === item.ITEM_TEXT);
           if (matchingQCItem) {
             await executeQuery(
               `EXEC [dbo].[Sp_SAP_INWARD_ERROR_LOG_Insert] 
@@ -887,23 +860,17 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
     };
 
     try {
-      const response = await axios.post(
-        `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-        sapRequestBody,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 30000,
-        }
-      );
+      const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000,
+      });
 
       const sapResponse = response.data;
 
       materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
 
       if (!materialDocument) {
-        const errorMessage =
-          sapResponse.Return[0]?.MESSAGE ||
-          'Failed to get material document number from SAP';
+        const errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
         errorMessages.push(errorMessage);
 
         for (const item of goodsmvtItems) {
@@ -1152,10 +1119,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
         Status: 'T',
         Message: responseMessage,
         ProcessedCount: allSerialNumbers.length,
-        TotalQuantity: Array.from(palletQuantities.values()).reduce(
-          (a, b) => a + b,
-          0
-        ),
+        TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
         MaterialDocument: materialDocument || undefined,
         QCMaterialDocument: qcMaterialDocument || undefined,
         PartialFailures: errorMessages.length > 0,
@@ -1169,8 +1133,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
       });
 
       const errorMessage =
-        axiosError.response?.data?.Message ||
-        axiosError.response?.data?.ModelState
+        axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
           ? JSON.stringify(axiosError.response.data.ModelState)
           : axiosError.message;
 
@@ -1300,10 +1263,7 @@ export const inwardBarcodeDataUpdate = async (req, res) => {
         Status: 'T', // Using T to indicate process continues despite SAP errors
         Message: `Inward done but SAP pending ⚠️ - errors: ${errorMessages.join('; ')}`,
         ProcessedCount: allSerialNumbers.length,
-        TotalQuantity: Array.from(palletQuantities.values()).reduce(
-          (a, b) => a + b,
-          0
-        ),
+        TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
         QCMaterialDocument: qcMaterialDocument || undefined,
         PartialFailures: true,
         ErrorMessages: errorMessages,

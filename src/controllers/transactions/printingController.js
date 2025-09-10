@@ -1,8 +1,5 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import axios from 'axios';
 import path from 'path';
 import net from 'net';
@@ -65,24 +62,18 @@ const validateUnits = unitsOfMeasure => {
 export const getSeriialNumberAndBoxNumber = async (req, res) => {
   try {
     const { ORDER_NUMBER, MATERIAL, BATCH } = req.body;
-    const labelSerialResult = await executeQuery(
-      'EXEC Sp_Find_LabelSerialNo @ORDER_NUMBER, @BATCH, @MATERIAL',
-      [
-        { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
-        { name: 'BATCH', type: sql.NVarChar, value: BATCH },
-        { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
-      ]
-    );
+    const labelSerialResult = await executeQuery('EXEC Sp_Find_LabelSerialNo @ORDER_NUMBER, @BATCH, @MATERIAL', [
+      { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
+      { name: 'BATCH', type: sql.NVarChar, value: BATCH },
+      { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
+    ]);
 
     const labelSerialNo = labelSerialResult[0].SrNo;
 
-    const boxNoResult = await executeQuery(
-      'EXEC Sp_Find_BoxNo @ORDER_NUMBER, @MATERIAL',
-      [
-        { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
-        { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
-      ]
-    );
+    const boxNoResult = await executeQuery('EXEC Sp_Find_BoxNo @ORDER_NUMBER, @MATERIAL', [
+      { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
+      { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
+    ]);
 
     const labelBoxNo = parseInt(boxNoResult[0].BoxNo);
 
@@ -98,47 +89,30 @@ export const getPrintData = async (req, res) => {
     const { ORDER_NUMBER, USER, EXPORT } = req.body;
     const orderValidation = validateOrderNumber(ORDER_NUMBER);
     if (orderValidation.error) {
-      return res
-        .status(orderValidation.status)
-        .json({ error: orderValidation.error });
+      return res.status(orderValidation.status).json({ error: orderValidation.error });
     }
     const NUMBER = orderValidation.value;
-    const materialResultExist = await executeQuery(
-      'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
-    const orderExist = await executeQuery(
-      'EXEC Sp_ProductionOrder_Check @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
+    const materialResultExist = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
+    const orderExist = await executeQuery('EXEC Sp_ProductionOrder_Check @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
     if (orderExist[0].Status === 'T') {
       if (orderExist[0].ORDER_TYPE == 'PP02') {
-        return res
-          .status(400)
-          .json({ error: "This is not production order it's resorting order" });
+        return res.status(400).json({ error: "This is not production order it's resorting order" });
       }
       // if(EXPORT === true && !materialResultExist[0].MATL_DESC.includes("EXP")) {
       //     return res.status(400).json({ error: "This is not production order it's resorting order" });
       // }
 
-      if (
-        EXPORT === true &&
-        !orderExist[0].OrderType?.includes('EXP') &&
-        orderExist[0].PRINTED_LABELS > 0
-      ) {
-        return res
-          .status(400)
-          .json({ error: 'This order is being used for printing BOXES' });
+      if (EXPORT === true && !orderExist[0].OrderType?.includes('EXP') && orderExist[0].PRINTED_LABELS > 0) {
+        return res.status(400).json({ error: 'This order is being used for printing BOXES' });
       }
 
-      if (
-        EXPORT === false &&
-        !orderExist[0].OrderType?.includes('DOMESTIC') &&
-        orderExist[0].PRINTED_LABELS > 0
-      ) {
+      if (EXPORT === false && !orderExist[0].OrderType?.includes('DOMESTIC') && orderExist[0].PRINTED_LABELS > 0) {
         return res.status(400).json({
-          error:
-            'This order is being used for the Export Production Order (PALLET)',
+          error: 'This order is being used for the Export Production Order (PALLET)',
         });
       }
       // if(EXPORT === false && materialResultExist[0].MATL_DESC.includes("EXP")) {
@@ -146,15 +120,11 @@ export const getPrintData = async (req, res) => {
       // }
       // Update production order open time before returning
       await updateProductionOrderOpened(NUMBER);
-      if (
-        orderExist[0].REMAINING_LABELS === 0 &&
-        orderExist[0].PRINTED_LABELS !== 0
-      ) {
+      if (orderExist[0].REMAINING_LABELS === 0 && orderExist[0].PRINTED_LABELS !== 0) {
         return res.status(200).json({
           OrderDetails: {
             Status: 'T',
-            Message:
-              '✅ Printing Done for this Order - You can reprint the labels',
+            Message: '✅ Printing Done for this Order - You can reprint the labels',
           },
         });
       } else {
@@ -165,13 +135,10 @@ export const getPrintData = async (req, res) => {
       }
     }
 
-    const { data: orderData } = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/order/details`,
-      {
-        ConnectionParams: SAP_SERVER,
-        NUMBER,
-      }
-    );
+    const { data: orderData } = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/order/details`, {
+      ConnectionParams: SAP_SERVER,
+      NUMBER,
+    });
 
     if (orderData.Return.MESSAGE?.includes('does not exist')) {
       return res.status(400).json({ error: orderData.Return.MESSAGE });
@@ -180,34 +147,23 @@ export const getPrintData = async (req, res) => {
     const [posData] = orderData.PositionTable;
     const [headerData] = orderData.HeaderTable;
 
-    const operationData = orderData.OperationTable.find(
-      op => op.OPERATION_NUMBER === '0020'
-    );
+    const operationData = orderData.OperationTable.find(op => op.OPERATION_NUMBER === '0020');
     if (!headerData.SYSTEM_STATUS.startsWith('REL')) {
-      return res
-        .status(400)
-        .json({ error: 'Production order not yet released' });
+      return res.status(400).json({ error: 'Production order not yet released' });
     }
-    const { data: materialData } = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/material/getall`,
-      {
-        ConnectionParams: SAP_SERVER,
-        Material: posData.MATERIAL,
-        Plant: posData.PROD_PLANT,
-      }
-    );
+    const { data: materialData } = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/material/getall`, {
+      ConnectionParams: SAP_SERVER,
+      Material: posData.MATERIAL,
+      Plant: posData.PROD_PLANT,
+    });
 
     const unitsValidation = validateUnits(materialData.UnitsOfMeasure);
     if (unitsValidation.error) {
-      return res
-        .status(unitsValidation.status)
-        .json({ error: unitsValidation.error });
+      return res.status(unitsValidation.status).json({ error: unitsValidation.error });
     }
 
     if (posData.ORDER_TYPE == 'PP02') {
-      return res
-        .status(400)
-        .json({ error: "This is not production order it's resorting order" });
+      return res.status(400).json({ error: "This is not production order it's resorting order" });
     }
 
     // if(EXPORT === true && !materialData.MaterialDescription[1].MATL_DESC.includes("EXP")) {
@@ -351,10 +307,7 @@ export const getPrintData = async (req, res) => {
         ]
       );
 
-      if (
-        materialResult[0].Message ===
-        'Error occurred while inserting data into Sub_Material_Master.'
-      ) {
+      if (materialResult[0].Message === 'Error occurred while inserting data into Sub_Material_Master.') {
         return res.status(500).json(materialResult);
       }
     }
@@ -460,21 +413,17 @@ export const getPrintData = async (req, res) => {
       return res.status(500).json(insertResult);
     }
 
-    const finalResult = await executeQuery(
-      'EXEC Sp_ProductionOrder_Check @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
-    const materialResult = await executeQuery(
-      'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-      [{ name: 'OrderNumber', type: sql.NVarChar, value: NUMBER }]
-    );
+    const finalResult = await executeQuery('EXEC Sp_ProductionOrder_Check @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
+    const materialResult = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+      { name: 'OrderNumber', type: sql.NVarChar, value: NUMBER },
+    ]);
 
     // Update production order open time before returning
     await updateProductionOrderOpened(NUMBER);
 
-    return res
-      .status(200)
-      .json({ OrderDetails: finalResult[0], materialDetails: materialResult });
+    return res.status(200).json({ OrderDetails: finalResult[0], materialDetails: materialResult });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
@@ -484,10 +433,9 @@ export const getPrintData = async (req, res) => {
 export const getRecentlyAddedProductionOrderNumber = async (req, res) => {
   try {
     const { OrderType } = req.query;
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_ProductionOrders_GetRecent] @OrderType`,
-      [{ name: 'OrderType', type: sql.NVarChar, value: OrderType }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_ProductionOrders_GetRecent] @OrderType`, [
+      { name: 'OrderType', type: sql.NVarChar, value: OrderType },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -503,10 +451,9 @@ export const updateProductionOrderOpened = async orderNumber => {
       return;
     }
 
-    await executeQuery(
-      `EXEC Sp_ProductionOrders_LatestOpenTime @ORDER_NUMBER`,
-      [{ name: 'ORDER_NUMBER', type: sql.NVarChar, value: orderNumber }]
-    );
+    await executeQuery(`EXEC Sp_ProductionOrders_LatestOpenTime @ORDER_NUMBER`, [
+      { name: 'ORDER_NUMBER', type: sql.NVarChar, value: orderNumber },
+    ]);
   } catch (error) {
     console.error('Error updating production order open time:', error);
   }
@@ -514,10 +461,7 @@ export const updateProductionOrderOpened = async orderNumber => {
 
 export const recentLabelPrinting = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_RecentLabelPrinting]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_RecentLabelPrinting]`, []);
 
     res.json(result);
   } catch (error) {
@@ -648,61 +592,54 @@ export const updateLabelPrinting = async (req, res) => {
     // }
 
     // Execute initial operations concurrently
-    const [upsertSrNoResult, upsertBoxNoResult, updateLabelCount] =
-      await Promise.all([
-        executeQuery(
-          'EXEC Sp_Upsert_FG_Label_SrNo @Order_Number, @Batch, @Material, @GeneratedSrNo',
-          [
-            {
-              name: 'Order_Number',
-              type: sql.NVarChar(255),
-              value: ORDER_NUMBER,
-            },
-            { name: 'Batch', type: sql.NVarChar(255), value: BATCH },
-            { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
-            {
-              name: 'GeneratedSrNo',
-              type: sql.Int,
-              value: parseInt(Printed_Labels),
-            },
-          ]
-        ),
-        executeQuery(
-          'EXEC Sp_Upsert_FG_Label_BoxNo @Order_Number, @Material, @GeneratedBoxNo',
-          [
-            {
-              name: 'Order_Number',
-              type: sql.NVarChar(255),
-              value: ORDER_NUMBER,
-            },
-            { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
-            {
-              name: 'GeneratedBoxNo',
-              type: sql.Int,
-              value: parseInt(Printed_Labels),
-            },
-          ]
-        ),
-        executeQuery(
-          'EXEC Sp_Update_LabelCount @OrderNumber, @Material, @Batch, @Printed_Labels, @Remaining_Labels, @OrderType',
-          [
-            { name: 'OrderNumber', type: sql.NVarChar, value: ORDER_NUMBER },
-            { name: 'Material', type: sql.NVarChar, value: MATERIAL },
-            { name: 'Batch', type: sql.NVarChar, value: BATCH },
-            {
-              name: 'Printed_Labels',
-              type: sql.Int,
-              value: parseInt(Printed_Labels),
-            },
-            {
-              name: 'Remaining_Labels',
-              type: sql.Int,
-              value: parseInt(Remaining_Labels),
-            },
-            { name: 'OrderType', type: sql.NVarChar, value: 'DOMESTIC' },
-          ]
-        ),
-      ]);
+    const [upsertSrNoResult, upsertBoxNoResult, updateLabelCount] = await Promise.all([
+      executeQuery('EXEC Sp_Upsert_FG_Label_SrNo @Order_Number, @Batch, @Material, @GeneratedSrNo', [
+        {
+          name: 'Order_Number',
+          type: sql.NVarChar(255),
+          value: ORDER_NUMBER,
+        },
+        { name: 'Batch', type: sql.NVarChar(255), value: BATCH },
+        { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
+        {
+          name: 'GeneratedSrNo',
+          type: sql.Int,
+          value: parseInt(Printed_Labels),
+        },
+      ]),
+      executeQuery('EXEC Sp_Upsert_FG_Label_BoxNo @Order_Number, @Material, @GeneratedBoxNo', [
+        {
+          name: 'Order_Number',
+          type: sql.NVarChar(255),
+          value: ORDER_NUMBER,
+        },
+        { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
+        {
+          name: 'GeneratedBoxNo',
+          type: sql.Int,
+          value: parseInt(Printed_Labels),
+        },
+      ]),
+      executeQuery(
+        'EXEC Sp_Update_LabelCount @OrderNumber, @Material, @Batch, @Printed_Labels, @Remaining_Labels, @OrderType',
+        [
+          { name: 'OrderNumber', type: sql.NVarChar, value: ORDER_NUMBER },
+          { name: 'Material', type: sql.NVarChar, value: MATERIAL },
+          { name: 'Batch', type: sql.NVarChar, value: BATCH },
+          {
+            name: 'Printed_Labels',
+            type: sql.Int,
+            value: parseInt(Printed_Labels),
+          },
+          {
+            name: 'Remaining_Labels',
+            type: sql.Int,
+            value: parseInt(Remaining_Labels),
+          },
+          { name: 'OrderType', type: sql.NVarChar, value: 'DOMESTIC' },
+        ]
+      ),
+    ]);
 
     // Check results of concurrent operations
     if (
@@ -724,9 +661,7 @@ export const updateLabelPrinting = async (req, res) => {
     const printQuantities = PrintQty.split('$');
 
     if (serialNumbers.length !== printQuantities.length) {
-      return res
-        .status(400)
-        .json({ error: 'Serial numbers and print quantities do not match' });
+      return res.status(400).json({ error: 'Serial numbers and print quantities do not match' });
     }
 
     tempFilePath = path.join(__dirname, `combined_temp_${Date.now()}.prn`);
@@ -737,11 +672,7 @@ export const updateLabelPrinting = async (req, res) => {
       const totalLabels = serialNumbers.length;
 
       // Process all batches sequentially
-      for (
-        let batchStart = 0;
-        batchStart < totalLabels;
-        batchStart += batchSize
-      ) {
+      for (let batchStart = 0; batchStart < totalLabels; batchStart += batchSize) {
         const batchEnd = Math.min(batchStart + batchSize, totalLabels);
         const currentBatch = serialNumbers.slice(batchStart, batchEnd);
         const currentQtyBatch = printQuantities.slice(batchStart, batchEnd);

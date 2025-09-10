@@ -4,16 +4,13 @@ export const getBoxAndPalletCountByMonth = async (req, res) => {
   const { Year } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_BoxAndPalletCountByMonth] @Year`,
-      [{ name: 'Year', type: sql.Int, value: Year }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_BoxAndPalletCountByMonth] @Year`, [
+      { name: 'Year', type: sql.Int, value: Year },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching box and pallet count by month:', error);
-    res
-      .status(500)
-      .json({ error: 'Failed to fetch box and pallet count data' });
+    res.status(500).json({ error: 'Failed to fetch box and pallet count data' });
   }
 };
 

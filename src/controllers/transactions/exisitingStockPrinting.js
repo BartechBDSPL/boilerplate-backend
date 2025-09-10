@@ -14,10 +14,9 @@ export const getMaterialBatches = async (req, res) => {
   const { Material } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC Sp_PSV_MaterialBatchGetAll @Material',
-      [{ name: 'Material', type: sql.NVarChar(50), value: Material }]
-    );
+    const result = await executeQuery('EXEC Sp_PSV_MaterialBatchGetAll @Material', [
+      { name: 'Material', type: sql.NVarChar(50), value: Material },
+    ]);
 
     if (result[0] && result[0].Status === 'F') {
       return res.status(200).json({
@@ -44,10 +43,9 @@ export const getMaterialDetails = async (req, res) => {
       });
     }
 
-    const result = await executeQuery(
-      'EXEC Sp_PSV_MaterialMaster_Details @Material',
-      [{ name: 'Material', type: sql.NVarChar(50), value: Material }]
-    );
+    const result = await executeQuery('EXEC Sp_PSV_MaterialMaster_Details @Material', [
+      { name: 'Material', type: sql.NVarChar(50), value: Material },
+    ]);
 
     if (result[0] && result[0].Status === 'F') {
       return res.status(200).json({
@@ -75,10 +73,9 @@ export const getMaterialBatchDetails = async (req, res) => {
     }
 
     // First call Sp_PSV_MaterialMaster_Details
-    const materialResult = await executeQuery(
-      'EXEC Sp_PSV_MaterialMaster_Details @Material',
-      [{ name: 'Material', type: sql.NVarChar(50), value: Material }]
-    );
+    const materialResult = await executeQuery('EXEC Sp_PSV_MaterialMaster_Details @Material', [
+      { name: 'Material', type: sql.NVarChar(50), value: Material },
+    ]);
 
     if (materialResult[0] && materialResult[0].Status === 'F') {
       return res.status(200).json({
@@ -88,13 +85,10 @@ export const getMaterialBatchDetails = async (req, res) => {
     }
 
     // If material details are successful, then call batch details
-    const batchResult = await executeQuery(
-      'EXEC Sp_PSV_MaterialBatchDetails @Material, @Batch',
-      [
-        { name: 'Material', type: sql.NVarChar(50), value: Material },
-        { name: 'Batch', type: sql.NVarChar(50), value: Batch },
-      ]
-    );
+    const batchResult = await executeQuery('EXEC Sp_PSV_MaterialBatchDetails @Material, @Batch', [
+      { name: 'Material', type: sql.NVarChar(50), value: Material },
+      { name: 'Batch', type: sql.NVarChar(50), value: Batch },
+    ]);
 
     if (batchResult[0] && batchResult[0].Status === 'F') {
       return res.status(200).json({

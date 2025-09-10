@@ -1,8 +1,5 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import axios from 'axios';
 
 export const scanDeliveryQR = async (req, res) => {
@@ -31,24 +28,12 @@ export const scanDeliveryQR = async (req, res) => {
       ]);
     }
 
-    const [
-      DeliveryNo,
-      CustomerNo,
-      Consignee,
-      PinCode,
-      VehicleNo,
-      LoadingPoint,
-    ] = qrParts;
+    const [DeliveryNo, CustomerNo, Consignee, PinCode, VehicleNo, LoadingPoint] = qrParts;
 
     // Step 1: Check if delivery order exists
-    const checkParams = [
-      { name: 'DeliveryNo', type: sql.NVarChar, value: DeliveryNo },
-    ];
+    const checkParams = [{ name: 'DeliveryNo', type: sql.NVarChar, value: DeliveryNo }];
 
-    const checkResult = await executeQuery(
-      'EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo',
-      checkParams
-    );
+    const checkResult = await executeQuery('EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo', checkParams);
 
     if (checkResult[0].Status === 'F') {
       return res.status(200).json([
@@ -60,11 +45,7 @@ export const scanDeliveryQR = async (req, res) => {
     }
 
     // If delivery order exists and has data, return it
-    if (
-      checkResult &&
-      checkResult.length > 0 &&
-      checkResult[0].Status === 'T'
-    ) {
+    if (checkResult && checkResult.length > 0 && checkResult[0].Status === 'T') {
       return res.status(200).json(checkResult);
     }
 
@@ -100,10 +81,7 @@ export const scanDeliveryQR = async (req, res) => {
       ],
     };
     console.log('SAP Request Payload:', JSON.stringify(payload, null, 2));
-    const response = await axios.post(
-      `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/picklist/details`,
-      payload
-    );
+    const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/picklist/details`, payload);
 
     // Check Return table for error messages
     if (response.data.Return && response.data.Return.length > 0) {
@@ -173,10 +151,7 @@ export const scanDeliveryQR = async (req, res) => {
     }
 
     // After successful insert, call Sp_Check_Delivery_OrderNo again to get the data
-    const finalResult = await executeQuery(
-      'EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo',
-      checkParams
-    );
+    const finalResult = await executeQuery('EXEC [dbo].[Sp_Check_Delivery_OrderNo] @DeliveryNo', checkParams);
 
     if (finalResult && finalResult.length > 0) {
       return res.status(200).json(finalResult);

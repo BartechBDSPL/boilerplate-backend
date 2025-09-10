@@ -4,9 +4,7 @@ import { sql } from '../../config/db.js';
 // Get all company details - which we see inside the table of Company Master
 export const getAllCompanyDetails = async (req, res) => {
   try {
-    const getAllDetails = await executeQuery(
-      'EXEC sp_company_master_get_all_details'
-    );
+    const getAllDetails = await executeQuery('EXEC sp_company_master_get_all_details');
     res.json(getAllDetails);
   } catch (error) {
     console.error(error);
@@ -16,15 +14,7 @@ export const getAllCompanyDetails = async (req, res) => {
 
 // update details of user
 export const updateCompanyDetails = async (req, res) => {
-  const {
-    companyId,
-    companyName,
-    address,
-    city,
-    state,
-    companyStatus,
-    updatedBy,
-  } = req.body;
+  const { companyId, companyName, address, city, state, companyStatus, updatedBy } = req.body;
   console.log(req.body);
   try {
     const updateDetails = await executeQuery(
@@ -50,15 +40,7 @@ export const updateCompanyDetails = async (req, res) => {
 };
 
 export const insertCompanyDetails = async (req, res) => {
-  const {
-    companyCode,
-    companyName,
-    address,
-    city,
-    state,
-    companyStatus,
-    createdBy,
-  } = req.body;
+  const { companyCode, companyName, address, city, state, companyStatus, createdBy } = req.body;
   try {
     const insertDetails = await executeQuery(
       'EXEC sp_company_master_insert @company_code, @company_name, @address, @city, @state, @company_status, @created_by, @barcode',

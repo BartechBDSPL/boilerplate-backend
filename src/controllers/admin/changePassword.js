@@ -3,8 +3,7 @@ import { sql } from '../../config/db.js';
 import { encryptPassword } from '../../utils/passswordHelper.js';
 
 export const changePassword = async (req, res) => {
-  const { user_id, old_user_password, new_user_password, is_first_change } =
-    req.body;
+  const { user_id, old_user_password, new_user_password, is_first_change } = req.body;
   try {
     const result = await executeQuery(
       'EXEC [dbo].[sp_change_password] @user_id, @old_user_password, @new_user_password, @is_first_change',

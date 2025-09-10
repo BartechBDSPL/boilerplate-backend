@@ -1,9 +1,6 @@
 import { executeQuery, sql } from '../../config/db.js';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import { format } from 'date-fns';
 
 export const validateSerialBarcodeWHBlock = async (req, res) => {
@@ -12,10 +9,9 @@ export const validateSerialBarcodeWHBlock = async (req, res) => {
   try {
     let result;
 
-    result = await executeQuery(
-      `EXEC [dbo].[HHT_WHBlock_PalletValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode }]
-    );
+    result = await executeQuery(`EXEC [dbo].[HHT_WHBlock_PalletValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -30,10 +26,9 @@ export const validateSerialBarcodeWHRelease = async (req, res) => {
   try {
     let result;
 
-    result = await executeQuery(
-      `EXEC [dbo].[HHT_WHUnrestricted_PalletValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode }]
-    );
+    result = await executeQuery(`EXEC [dbo].[HHT_WHUnrestricted_PalletValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -43,16 +38,7 @@ export const validateSerialBarcodeWHRelease = async (req, res) => {
 };
 
 export const updateWHBlockReleaseStatus = async (req, res) => {
-  const {
-    V_ScanBarcodes,
-    NewQCStatus,
-    StorageLocation,
-    UserId,
-    UNIT,
-    UNIT_ISO,
-    Reason,
-    isExisting,
-  } = req.body;
+  const { V_ScanBarcodes, NewQCStatus, StorageLocation, UserId, UNIT, UNIT_ISO, Reason, isExisting } = req.body;
   try {
     if (!V_ScanBarcodes) {
       return res.json({
@@ -69,9 +55,7 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
     const unitIsoValues = UNIT_ISO ? UNIT_ISO.split('$') : [];
     const isExistingValues = isExisting ? isExisting.split('$') : [];
 
-    const palletGroups = V_ScanBarcodes.split('*').filter(group =>
-      group.trim()
-    );
+    const palletGroups = V_ScanBarcodes.split('*').filter(group => group.trim());
 
     // Process each pallet group - Format: palletnumber1#pallet1Qty;PalletNumber1*palletnumber2#pallet2Qty;PalletNumber2
     for (let i = 0; i < palletGroups.length; i++) {
@@ -101,16 +85,13 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
             palletQuantities.set(palletBarcode, parsedQuantity);
 
             try {
-              const palletDetails = await executeQuery(
-                `EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`,
-                [
-                  {
-                    name: 'ScanBarcode',
-                    type: sql.NVarChar,
-                    value: palletBarcode,
-                  },
-                ]
-              );
+              const palletDetails = await executeQuery(`EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`, [
+                {
+                  name: 'ScanBarcode',
+                  type: sql.NVarChar,
+                  value: palletBarcode,
+                },
+              ]);
 
               if (palletDetails && palletDetails.length > 0) {
                 const detail = palletDetails[0];
@@ -118,8 +99,7 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
                 const currentUnit = unitValues[i] || detail.ALT_UNIT || 'PC';
                 const currentUnitIso = unitIsoValues[i] || 'PCE';
 
-                const formattedMaterialNo =
-                  detail.MATERIAL?.padStart(18, '0') || '';
+                const formattedMaterialNo = detail.MATERIAL?.padStart(18, '0') || '';
                 const moveType = NewQCStatus === 'Unrestricted' ? '343' : '344';
 
                 goodsmvtItems.push({
@@ -132,10 +112,7 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
                   ENTRY_QNT: parsedQuantity,
                   ENTRY_UOM: currentUnit,
                   ENTRY_UOM_ISO: currentUnitIso,
-                  ITEM_TEXT:
-                    palletBarcode.length > 45
-                      ? palletBarcode.substring(0, 45)
-                      : palletBarcode,
+                  ITEM_TEXT: palletBarcode.length > 45 ? palletBarcode.substring(0, 45) : palletBarcode,
                   MVT_IND: '',
                 });
 
@@ -145,10 +122,7 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
                 allPalletBarcodes.add(palletBarcode);
               }
             } catch (error) {
-              console.error(
-                `Error getting pallet details for ${palletBarcode}:`,
-                error
-              );
+              console.error(`Error getting pallet details for ${palletBarcode}:`, error);
               allPalletBarcodes.add(palletBarcode);
             }
           }
@@ -178,14 +152,10 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
       };
 
       try {
-        const response = await axios.post(
-          `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-          sapRequestBody,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 60000,
-          }
-        );
+        const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 60000,
+        });
 
         const sapResponse = response.data;
         const materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
@@ -291,9 +261,7 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
         }
 
         if (!materialDocument) {
-          const errorMessage =
-            sapResponse.Return[0]?.MESSAGE ||
-            'Failed to get material document number from SAP';
+          const errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
           for (const item of itemsBatch) {
             await executeQuery(
               `EXEC [dbo].[Sp_SAP_WHBlockORUnrestricted_ERROR_LOG_Insert] 
@@ -391,18 +359,14 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
 
         materialDocuments.push(materialDocument);
       } catch (axiosError) {
-        console.error(
-          `SAP API Error Details for ${NewQCStatus} Batch ${Math.floor(i / batchSize) + 1}:`,
-          {
-            response: axiosError.response?.data,
-            status: axiosError.response?.status,
-            headers: axiosError.response?.headers,
-          }
-        );
+        console.error(`SAP API Error Details for ${NewQCStatus} Batch ${Math.floor(i / batchSize) + 1}:`, {
+          response: axiosError.response?.data,
+          status: axiosError.response?.status,
+          headers: axiosError.response?.headers,
+        });
 
         const errorMessage =
-          axiosError.response?.data?.Message ||
-          axiosError.response?.data?.ModelState
+          axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
             ? JSON.stringify(axiosError.response.data.ModelState)
             : axiosError.message;
 
@@ -521,10 +485,7 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
         Status: 'T',
         Message: `Process continues with SAP errors: ${errorMessages.join('; ')}`,
         ProcessedCount: allPalletBarcodes.size,
-        TotalQuantity: Array.from(palletQuantities.values()).reduce(
-          (a, b) => a + b,
-          0
-        ),
+        TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
         MaterialDocument: '',
         AllDocuments: [],
         PartialFailures: true,
@@ -543,10 +504,7 @@ export const updateWHBlockReleaseStatus = async (req, res) => {
       Status: 'T',
       Message: responseMessage,
       ProcessedCount: allPalletBarcodes.size,
-      TotalQuantity: Array.from(palletQuantities.values()).reduce(
-        (a, b) => a + b,
-        0
-      ),
+      TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
       MaterialDocument: primaryMaterialDocument,
       AllDocuments: materialDocuments,
       PartialFailures: errorMessages.length > 0,

@@ -7,21 +7,17 @@ describe('Admin Endpoints', () => {
 
   // Get auth token before running admin tests
   beforeAll(async () => {
-    const response = await request(app)
-      .post('/api/auth/check-credentials')
-      .send({
-        User_ID: TEST_CREDENTIALS.User_ID,
-        User_Password: TEST_CREDENTIALS.User_Password,
-      });
+    const response = await request(app).post('/api/auth/check-credentials').send({
+      User_ID: TEST_CREDENTIALS.User_ID,
+      User_Password: TEST_CREDENTIALS.User_Password,
+    });
 
     authToken = response.body.token;
   }, 10000);
 
   describe('GET /api/admin/all-user-master', () => {
     it('should get all users when authenticated', async () => {
-      const response = await request(app)
-        .get('/api/admin/all-user-master')
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app).get('/api/admin/all-user-master').set('Authorization', `Bearer ${authToken}`);
 
       console.log(response.body);
       expect(response.status).toBe(200);

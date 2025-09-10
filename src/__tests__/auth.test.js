@@ -14,12 +14,10 @@ describe('Authentication Endpoints', () => {
 
   describe('POST /api/auth/check-credentials', () => {
     it('should authenticate user with valid credentials', async () => {
-      const response = await request(app)
-        .post('/api/auth/check-credentials')
-        .send({
-          User_ID: TEST_CREDENTIALS.User_ID,
-          User_Password: TEST_CREDENTIALS.User_Password,
-        });
+      const response = await request(app).post('/api/auth/check-credentials').send({
+        User_ID: TEST_CREDENTIALS.User_ID,
+        User_Password: TEST_CREDENTIALS.User_Password,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -28,12 +26,10 @@ describe('Authentication Endpoints', () => {
     }, 10000); //
 
     it('should reject invalid credentials', async () => {
-      const response = await request(app)
-        .post('/api/auth/check-credentials')
-        .send({
-          User_ID: 'wronguser',
-          User_Password: 'wrongpass',
-        });
+      const response = await request(app).post('/api/auth/check-credentials').send({
+        User_ID: 'wronguser',
+        User_Password: 'wrongpass',
+      });
 
       expect(response.status).toBe(401);
     });

@@ -1,8 +1,5 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import axios from 'axios';
 import { format } from 'date-fns';
 
@@ -31,9 +28,7 @@ export const validatePalletBarcode = async (req, res) => {
     );
     const palletLocationData = palletLocationResult[0];
     if (palletLocationData.Status == 'F') {
-      return res
-        .json({ Status: 'F', Message: palletLocationData.Message })
-        .status(200);
+      return res.json({ Status: 'F', Message: palletLocationData.Message }).status(200);
     }
 
     if (palletLocationData.StorageLocation !== FromWarehouseCode) {
@@ -88,23 +83,17 @@ export const validatePalletBarcode = async (req, res) => {
       };
 
       try {
-        const response = await axios.post(
-          `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-          sapRequestBody,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 300_000,
-          }
-        );
+        const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 300_000,
+        });
 
         const sapResponse = response.data;
         materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
 
         if (!materialDocument) {
           sapError = true;
-          errorMessage =
-            sapResponse.Return[0]?.MESSAGE ||
-            'Failed to get material document number from SAP';
+          errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
 
           // Log the error in the database
           await executeQuery(

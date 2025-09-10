@@ -1,12 +1,7 @@
 import { executeUpdateQuery, sql } from '../../config/db.js';
 
 export const insertApplicationVersion = async (req, res) => {
-  const {
-    Application_Name,
-    Application_Version_Code,
-    Application_Version_Name,
-    UpdatedBy,
-  } = req.body;
+  const { Application_Name, Application_Version_Code, Application_Version_Name, UpdatedBy } = req.body;
 
   try {
     const result = await executeUpdateQuery(
@@ -41,16 +36,13 @@ export const fetchApplicationVersionByName = async (req, res) => {
   const { Application_Name } = req.body;
 
   try {
-    const result = await executeUpdateQuery(
-      'EXEC [dbo].[Sp_Application_Version_FetchByName] @Application_Name',
-      [
-        {
-          name: 'Application_Name',
-          type: sql.NVarChar(255),
-          value: Application_Name,
-        },
-      ]
-    );
+    const result = await executeUpdateQuery('EXEC [dbo].[Sp_Application_Version_FetchByName] @Application_Name', [
+      {
+        name: 'Application_Name',
+        type: sql.NVarChar(255),
+        value: Application_Name,
+      },
+    ]);
     res.json(result[0]);
   } catch (error) {
     console.error('Error fetching application version by name:', error);

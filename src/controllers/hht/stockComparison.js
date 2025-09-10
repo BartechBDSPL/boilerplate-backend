@@ -1,19 +1,12 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_SERVER,
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-} from '../../utils/constants.js';
+import { SAP_SERVER, SAP_CONNECTOR_MIDDLEWARE_URL } from '../../utils/constants.js';
 import axios from 'axios';
 
 // Internal function to generate unique ID
 const generateUniqueId = async () => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[StockComparison_GenerateUniqueId]`
-    );
-    return Array.isArray(result) && result.length > 0
-      ? result[0].UniqueId
-      : null;
+    const result = await executeQuery(`EXEC [dbo].[StockComparison_GenerateUniqueId]`);
+    return Array.isArray(result) && result.length > 0 ? result[0].UniqueId : null;
   } catch (error) {
     console.error('Error generating unique ID:', error);
     throw new Error('Failed to generate unique ID');
@@ -68,9 +61,7 @@ export const getStockComparison = async (req, res) => {
       });
     }
 
-    const stockData = response.data.Quantities.filter(
-      item => item.CHARG !== ''
-    );
+    const stockData = response.data.Quantities.filter(item => item.CHARG !== '');
 
     if (stockData.length === 0) {
       return res.status(200).json({
@@ -151,10 +142,9 @@ export const getStockComparison = async (req, res) => {
       );
     }
 
-    const stockComparisonData = await executeQuery(
-      `EXEC [dbo].[Sp_StockComparison_GetAll] @Unique_Id`,
-      [{ name: 'Unique_Id', type: sql.NVarChar(50), value: uniqueId }]
-    );
+    const stockComparisonData = await executeQuery(`EXEC [dbo].[Sp_StockComparison_GetAll] @Unique_Id`, [
+      { name: 'Unique_Id', type: sql.NVarChar(50), value: uniqueId },
+    ]);
 
     return res.status(200).json({
       Status: 'T',

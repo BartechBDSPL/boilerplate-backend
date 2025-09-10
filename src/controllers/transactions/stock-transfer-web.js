@@ -2,10 +2,7 @@ import { executeQuery, sql } from '../../config/db.js';
 
 export const getTripWarehouseDetails = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_WHDetails]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_WHDetails]`, []);
     res.json(result);
   } catch (error) {
     console.error('Error fetching warehouse details:', error);
@@ -15,10 +12,7 @@ export const getTripWarehouseDetails = async (req, res) => {
 
 export const getTripTransporterDetails = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_TransporterDetail]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_TransporterDetail]`, []);
     res.json(result);
   } catch (error) {
     console.error('Error fetching transporter details:', error);
@@ -30,16 +24,13 @@ export const getTripMaterials = async (req, res) => {
   const { STORAGE_LOCATION } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_Material] @STORAGE_LOCATION`,
-      [
-        {
-          name: 'STORAGE_LOCATION',
-          type: sql.NVarChar,
-          value: STORAGE_LOCATION,
-        },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_Material] @STORAGE_LOCATION`, [
+      {
+        name: 'STORAGE_LOCATION',
+        type: sql.NVarChar,
+        value: STORAGE_LOCATION,
+      },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching trip materials:', error);
@@ -51,17 +42,14 @@ export const getTripBatches = async (req, res) => {
   const { MATERIAL, STORAGE_LOCATION } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_Batch] @MATERIAL, @STORAGE_LOCATION`,
-      [
-        { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
-        {
-          name: 'STORAGE_LOCATION',
-          type: sql.NVarChar,
-          value: STORAGE_LOCATION,
-        },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_Batch] @MATERIAL, @STORAGE_LOCATION`, [
+      { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
+      {
+        name: 'STORAGE_LOCATION',
+        type: sql.NVarChar,
+        value: STORAGE_LOCATION,
+      },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching trip batches:', error);
@@ -73,18 +61,15 @@ export const getTripTotalQty = async (req, res) => {
   const { MATERIAL, BATCH, STORAGE_LOCATION } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_TotalQty] @MATERIAL, @BATCH, @STORAGE_LOCATION`,
-      [
-        { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
-        { name: 'BATCH', type: sql.NVarChar, value: BATCH },
-        {
-          name: 'STORAGE_LOCATION',
-          type: sql.NVarChar,
-          value: STORAGE_LOCATION,
-        },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_TotalQty] @MATERIAL, @BATCH, @STORAGE_LOCATION`, [
+      { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
+      { name: 'BATCH', type: sql.NVarChar, value: BATCH },
+      {
+        name: 'STORAGE_LOCATION',
+        type: sql.NVarChar,
+        value: STORAGE_LOCATION,
+      },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching total quantity:', error);
@@ -96,13 +81,10 @@ export const getTripPalZpe = async (req, res) => {
   const { ORDER_NUMBER, MATERIAL } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GetPalZpe] @ORDER_NUMBER, @MATERIAL`,
-      [
-        { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
-        { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GetPalZpe] @ORDER_NUMBER, @MATERIAL`, [
+      { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
+      { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching pallet details:', error);
@@ -114,13 +96,10 @@ export const getPallet = async (req, res) => {
   const { ORDER_NUMBER, MATERIAL } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GetPalZpe] @ORDER_NUMBER, @MATERIAL`,
-      [
-        { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
-        { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GetPalZpe] @ORDER_NUMBER, @MATERIAL`, [
+      { name: 'ORDER_NUMBER', type: sql.NVarChar, value: ORDER_NUMBER },
+      { name: 'MATERIAL', type: sql.NVarChar, value: MATERIAL },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching pallet details:', error);
@@ -149,10 +128,7 @@ export const getPalletBarcodes = async (req, res) => {
 
 export const getPendingTripOrders = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TripDetails_PendingOrders]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TripDetails_PendingOrders]`, []);
     res.json(result);
   } catch (error) {
     console.error('Error fetching pending trip orders:', error);
@@ -164,10 +140,9 @@ export const getTripNoData = async (req, res) => {
   try {
     const { OrderNo } = req.body;
 
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TripDetails_TripNoData] @OrderNo`,
-      [{ name: 'OrderNo', type: sql.NVarChar, value: OrderNo }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TripDetails_TripNoData] @OrderNo`, [
+      { name: 'OrderNo', type: sql.NVarChar, value: OrderNo },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -179,10 +154,7 @@ export const getTripNoData = async (req, res) => {
 
 export const generateTripSrNo = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GenerateSrNo]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GenerateSrNo]`, []);
 
     res.json(result[0]);
   } catch (error) {
@@ -193,10 +165,7 @@ export const generateTripSrNo = async (req, res) => {
 
 export const insertTripDetails = async (req, res) => {
   try {
-    const tripResult = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GenerateSrNo]`,
-      []
-    );
+    const tripResult = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GenerateSrNo]`, []);
 
     const newTripNo = tripResult[0].TripNo;
 
@@ -212,15 +181,7 @@ export const insertTripDetails = async (req, res) => {
       CreatedBy,
     } = req.body;
 
-    const {
-      Material,
-      Material_Desc,
-      Batch,
-      Qty,
-      TotalBox,
-      TotalPallet,
-      PalletNumber,
-    } = req.body;
+    const { Material, Material_Desc, Batch, Qty, TotalBox, TotalPallet, PalletNumber } = req.body;
 
     const materials = Material.split('$');
     const materialDescs = Material_Desc.split('$');
@@ -329,10 +290,7 @@ export const insertTripDetails = async (req, res) => {
 
 export const getRecentTrips = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GetRecentTrip]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GetRecentTrip]`, []);
 
     res.json(result);
   } catch (error) {
@@ -343,10 +301,7 @@ export const getRecentTrips = async (req, res) => {
 
 export const getTripDetails = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_StockTransfer_Details]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_StockTransfer_Details]`, []);
     res.json(result);
   } catch (error) {
     console.error('Error fetching trip details:', error);

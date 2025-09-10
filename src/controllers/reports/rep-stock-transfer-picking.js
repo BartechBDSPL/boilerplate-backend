@@ -1,16 +1,7 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const getStockTransferPicking = async (req, res) => {
-  const {
-    FromDate,
-    ToDate,
-    OrderNo,
-    Material,
-    MaterialText,
-    Batch,
-    FromStorageLocation,
-    ToStorageLocation,
-  } = req.body;
+  const { FromDate, ToDate, OrderNo, Material, MaterialText, Batch, FromStorageLocation, ToStorageLocation } = req.body;
   try {
     const result = await executeQuery(
       'EXEC Sp_Rep_StockTransferPicking @FromDate, @ToDate, @OrderNo, @Material, @MaterialText, @Batch, @FromStorageLocation, @ToStorageLocation',

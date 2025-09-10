@@ -13,10 +13,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + '-' + Date.now() + path.extname(file.originalname)
-    );
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
   },
 });
 
@@ -83,9 +80,7 @@ export const uploadMaterialExistingStock = async (req, res) => {
         ];
 
         const fileHeaders = Object.keys(data[0]);
-        const missingHeaders = requiredHeaders.filter(
-          header => !fileHeaders.includes(header)
-        );
+        const missingHeaders = requiredHeaders.filter(header => !fileHeaders.includes(header));
 
         if (missingHeaders.length > 0) {
           // Delete the file after processing
@@ -226,14 +221,7 @@ export const uploadMaterialExistingStock = async (req, res) => {
 
 export const insertMaterialExistingStock = async (req, res) => {
   try {
-    const {
-      Material,
-      MaterialText,
-      QtyPerPallet,
-      PcsPerPackunit,
-      PackUnitPerPallet,
-      User,
-    } = req.body;
+    const { Material, MaterialText, QtyPerPallet, PcsPerPackunit, PackUnitPerPallet, User } = req.body;
 
     if (!Material || !MaterialText) {
       return res.status(400).json({
@@ -277,15 +265,7 @@ export const insertMaterialExistingStock = async (req, res) => {
 
 export const updateMaterialExistingStock = async (req, res) => {
   try {
-    const {
-      Mid,
-      Material,
-      MaterialText,
-      QtyPerPallet,
-      PcsPerPackunit,
-      PackUnitPerPallet,
-      User,
-    } = req.body;
+    const { Mid, Material, MaterialText, QtyPerPallet, PcsPerPackunit, PackUnitPerPallet, User } = req.body;
 
     if (!Mid) {
       return res.status(400).json({
@@ -330,10 +310,7 @@ export const updateMaterialExistingStock = async (req, res) => {
 
 export const getAllMaterialUploaded = async (req, res) => {
   try {
-    const result = await executeQuery(
-      'EXEC Sp_MaterialMaster_ExistingStock_GetAll',
-      []
-    );
+    const result = await executeQuery('EXEC Sp_MaterialMaster_ExistingStock_GetAll', []);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({

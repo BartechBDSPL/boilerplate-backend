@@ -21,10 +21,7 @@ export const insertPalletMaster = async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error(
-      'Error executing Invalid Barcode Scan, Material Pending for Put Away..!stored procedure:',
-      error
-    );
+    console.error('Error executing Invalid Barcode Scan, Material Pending for Put Away..!stored procedure:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -60,10 +57,9 @@ export const checkPalletBarcode = async (req, res) => {
 
   try {
     // Execute the stored procedure with parameters
-    const result = await executeQuery(
-      'EXEC [dbo].[Sp_CheckPalletBarcode] @PalletBarcode',
-      [{ name: 'PalletBarcode', type: sql.NVarChar(100), value: PalletBarcode }]
-    );
+    const result = await executeQuery('EXEC [dbo].[Sp_CheckPalletBarcode] @PalletBarcode', [
+      { name: 'PalletBarcode', type: sql.NVarChar(100), value: PalletBarcode },
+    ]);
 
     // Check if result contains data and send it back to the client
     if (result.length > 0) {
@@ -79,9 +75,7 @@ export const checkPalletBarcode = async (req, res) => {
 
 export const getAllPalletMasterDetails = async (req, res) => {
   try {
-    const result = await executeQuery(
-      'EXEC [dbo].[Sp_PalletMaster_GetAllDetails]'
-    );
+    const result = await executeQuery('EXEC [dbo].[Sp_PalletMaster_GetAllDetails]');
 
     res.json(result);
   } catch (error) {

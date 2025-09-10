@@ -105,10 +105,9 @@ export const updatePalletBreak = async (req, res) => {
     printerDPI,
   } = req.body;
   try {
-    const getLineResult = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Pallet_GetLineNumber] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode }]
-    );
+    const getLineResult = await executeQuery(`EXEC [dbo].[HHT_FG_Pallet_GetLineNumber] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode },
+    ]);
 
     const Line = getLineResult[0].Line;
 
@@ -117,26 +116,19 @@ export const updatePalletBreak = async (req, res) => {
       const portNumber = parseInt(printerPort) || 9100;
       const printerInRange = await isPrinterReachable(printerIP, portNumber);
       if (!printerInRange) {
-        return res
-          .status(200)
-          .json({ Status: 'F', Message: 'Printer out of range' });
+        return res.status(200).json({ Status: 'F', Message: 'Printer out of range' });
       }
     }
     const validationResult = await executeQuery(
       `EXEC [dbo].[HHT_PaletBarcode_ProductionBreak_Validation] @PalletBarcode`,
       [{ name: 'PalletBarcode', type: sql.NVarChar(100), value: PalletBarcode }]
     );
-    const pcsInBoxResult = await executeQuery(
-      `EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode }]
-    );
+    const pcsInBoxResult = await executeQuery(`EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode },
+    ]);
 
-    const pcsInBox = Math.floor(
-      pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR
-    );
-    const allSerialNumbers = new Set(
-      validationResult.map(item => item.SerialNo)
-    );
+    const pcsInBox = Math.floor(pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR);
+    const allSerialNumbers = new Set(validationResult.map(item => item.SerialNo));
 
     const serialNumbersToMove = SerialNo.split('$');
 
@@ -145,22 +137,19 @@ export const updatePalletBreak = async (req, res) => {
     const remainingSerialNumbers = Array.from(allSerialNumbers);
 
     for (const serialNumber of serialNumbersToMove) {
-      const splitResult = await executeQuery(
-        `EXEC [dbo].[Sp_PalletSplit_Insert] @SerialNo, @PalletBarcode, @TransBy`,
-        [
-          { name: 'SerialNo', type: sql.NVarChar(50), value: serialNumber },
-          {
-            name: 'PalletBarcode',
-            type: sql.NVarChar(50),
-            value: PalletBarcode,
-          },
-          {
-            name: 'TransBy',
-            type: sql.NVarChar(50),
-            value: TransBy || 'System',
-          },
-        ]
-      );
+      const splitResult = await executeQuery(`EXEC [dbo].[Sp_PalletSplit_Insert] @SerialNo, @PalletBarcode, @TransBy`, [
+        { name: 'SerialNo', type: sql.NVarChar(50), value: serialNumber },
+        {
+          name: 'PalletBarcode',
+          type: sql.NVarChar(50),
+          value: PalletBarcode,
+        },
+        {
+          name: 'TransBy',
+          type: sql.NVarChar(50),
+          value: TransBy || 'System',
+        },
+      ]);
 
       if (splitResult[0].Status === 'F') {
         return res.status(400).json({
@@ -170,29 +159,25 @@ export const updatePalletBreak = async (req, res) => {
       }
     }
 
-    const result2 = await executeQuery(
-      `EXEC [dbo].[HHT_PalletBarcode_Break_SrNo] @PalletBarcode`,
-      [{ name: 'PalletBarcode', type: sql.NVarChar(250), value: PalletBarcode }]
-    );
+    const result2 = await executeQuery(`EXEC [dbo].[HHT_PalletBarcode_Break_SrNo] @PalletBarcode`, [
+      { name: 'PalletBarcode', type: sql.NVarChar(250), value: PalletBarcode },
+    ]);
     const newPalletBarcode2 = result2[0].PalletBarcode;
 
     for (const serialNumber of remainingSerialNumbers) {
-      await executeQuery(
-        `EXEC [dbo].[HHT_PalletBreak_Update] @SerialNo, @OldPalBarcode, @NewPalBarcode`,
-        [
-          { name: 'SerialNo', type: sql.NVarChar(50), value: serialNumber },
-          {
-            name: 'OldPalBarcode',
-            type: sql.NVarChar(50),
-            value: PalletBarcode,
-          },
-          {
-            name: 'NewPalBarcode',
-            type: sql.NVarChar(50),
-            value: newPalletBarcode2,
-          },
-        ]
-      );
+      await executeQuery(`EXEC [dbo].[HHT_PalletBreak_Update] @SerialNo, @OldPalBarcode, @NewPalBarcode`, [
+        { name: 'SerialNo', type: sql.NVarChar(50), value: serialNumber },
+        {
+          name: 'OldPalBarcode',
+          type: sql.NVarChar(50),
+          value: PalletBarcode,
+        },
+        {
+          name: 'NewPalBarcode',
+          type: sql.NVarChar(50),
+          value: newPalletBarcode2,
+        },
+      ]);
     }
 
     if (PrinterIp) {
@@ -200,10 +185,7 @@ export const updatePalletBreak = async (req, res) => {
       const portNumber = parseInt(printerPort) || 9100;
 
       // Print second label
-      const palletNumber2 = newPalletBarcode2
-        .split('|')
-        .pop()
-        .replace('FG', '');
+      const palletNumber2 = newPalletBarcode2.split('|').pop().replace('FG', '');
       const printData2 = {
         Material,
         MaterialDescription,

@@ -1,27 +1,21 @@
 import { executeQuery, sql } from '../../config/db.js';
 import { format } from 'date-fns';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 
 export const validateResortingReturnBarcode = async (req, res) => {
   const { ScanBarcode } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC [dbo].[HHT_Resorting_ReturnValidation] @ScanBarcode',
-      [{ name: 'ScanBarcode', type: sql.NVarChar(255), value: ScanBarcode }]
-    );
+    const result = await executeQuery('EXEC [dbo].[HHT_Resorting_ReturnValidation] @ScanBarcode', [
+      { name: 'ScanBarcode', type: sql.NVarChar(255), value: ScanBarcode },
+    ]);
 
     if (result[0].Status === 'T') {
       result[0].ORDER_NUMBER = result[0].ORDER_NUMBER
         ? result[0].ORDER_NUMBER.replace(/^0+/, '')
         : result[0].ORDER_NUMBER;
-      result[0].MATERIAL = result[0].MATERIAL
-        ? result[0].MATERIAL.replace(/^0+/, '')
-        : result[0].MATERIAL;
+      result[0].MATERIAL = result[0].MATERIAL ? result[0].MATERIAL.replace(/^0+/, '') : result[0].MATERIAL;
     }
 
     res.status(200).json(result[0]);
@@ -51,15 +45,11 @@ export const updateResortingReturn = async (req, res) => {
   } = req.body;
 
   try {
-    const barcodeEntries = PalletBarcode
-      ? PalletBarcode.split('$').filter(entry => entry.trim())
-      : [];
+    const barcodeEntries = PalletBarcode ? PalletBarcode.split('$').filter(entry => entry.trim()) : [];
 
     const units = UNIT ? UNIT.split('$') : [];
     const unitIsos = UNIT_ISO ? UNIT_ISO.split('$') : [];
-    const storageLocations = STORAGE_LOCATION
-      ? STORAGE_LOCATION.split('$')
-      : [];
+    const storageLocations = STORAGE_LOCATION ? STORAGE_LOCATION.split('$') : [];
     const batches = BATCH ? BATCH.split('$') : [];
     const quantities = QUANTITY ? QUANTITY.split('$') : [];
     const materials = MATERIAL ? MATERIAL.split('$') : [];
@@ -80,8 +70,7 @@ export const updateResortingReturn = async (req, res) => {
       const batch = batches.length > i ? batches[i] : batches[0] || '';
       const unit = units.length > i ? units[i] : 'ST';
       const unit_iso = unitIsos.length > i ? unitIsos[i] : 'PCE';
-      const targetStorageLoc =
-        storageLocations.length > i ? storageLocations[i] : '5120';
+      const targetStorageLoc = storageLocations.length > i ? storageLocations[i] : '5120';
       const actualQty = quantities.length > i ? quantities[i] : '1';
 
       goodsmvtItems343.push({
@@ -166,17 +155,11 @@ export const updateResortingReturn = async (req, res) => {
             }
           );
 
-          if (
-            sapResponse343.Return &&
-            Array.isArray(sapResponse343.Return) &&
-            sapResponse343.Return.length > 0
-          ) {
+          if (sapResponse343.Return && Array.isArray(sapResponse343.Return) && sapResponse343.Return.length > 0) {
             const returnMessage = sapResponse343.Return[0];
             if (['E', 'I', 'A'].includes(returnMessage.TYPE)) {
               hasAny343Errors = true;
-              errorMessages343.push(
-                `343 movement error: ${returnMessage.MESSAGE || 'Unknown error'}`
-              );
+              errorMessages343.push(`343 movement error: ${returnMessage.MESSAGE || 'Unknown error'}`);
 
               for (const item of batch343) {
                 await executeQuery(
@@ -271,13 +254,11 @@ export const updateResortingReturn = async (req, res) => {
           }
 
           // Check if we got a material document number (success indicator)
-          const materialDocument343 =
-            sapResponse343.GoodsMovementHeadRet?.MAT_DOC;
+          const materialDocument343 = sapResponse343.GoodsMovementHeadRet?.MAT_DOC;
 
           if (!materialDocument343) {
             hasAny343Errors = true;
-            const errorMessage =
-              'Failed to get material document number for 343 transaction';
+            const errorMessage = 'Failed to get material document number for 343 transaction';
             errorMessages343.push(errorMessage);
 
             // Log SAP error to database
@@ -474,17 +455,11 @@ export const updateResortingReturn = async (req, res) => {
             }
           );
 
-          if (
-            sapResponse311.Return &&
-            Array.isArray(sapResponse311.Return) &&
-            sapResponse311.Return.length > 0
-          ) {
+          if (sapResponse311.Return && Array.isArray(sapResponse311.Return) && sapResponse311.Return.length > 0) {
             const returnMessage = sapResponse311.Return[0];
             if (['E', 'I', 'A'].includes(returnMessage.TYPE)) {
               hasAny311Errors = true;
-              errorMessages311.push(
-                `311 movement error: ${returnMessage.MESSAGE || 'Unknown error'}`
-              );
+              errorMessages311.push(`311 movement error: ${returnMessage.MESSAGE || 'Unknown error'}`);
 
               // Log SAP error to database
               for (const item of batch311) {
@@ -580,13 +555,11 @@ export const updateResortingReturn = async (req, res) => {
           }
 
           // Check if we got a material document number (success indicator)
-          const materialDocument311 =
-            sapResponse311.GoodsMovementHeadRet?.MAT_DOC;
+          const materialDocument311 = sapResponse311.GoodsMovementHeadRet?.MAT_DOC;
 
           if (!materialDocument311) {
             hasAny311Errors = true;
-            const errorMessage =
-              'Failed to get material document number for 311 transaction';
+            const errorMessage = 'Failed to get material document number for 311 transaction';
             errorMessages311.push(errorMessage);
 
             // Log SAP error to database
@@ -765,17 +738,14 @@ export const updateResortingReturn = async (req, res) => {
         const chunk = allSerialNumbers.slice(j, j + 100);
         await Promise.all(
           chunk.map(serial =>
-            executeQuery(
-              'EXEC [dbo].[HHT_Resorting_ReturnUpdate] @ScanBarcode, @ReturnBy',
-              [
-                {
-                  name: 'ScanBarcode',
-                  type: sql.NVarChar(255),
-                  value: serial.serial.trim(),
-                },
-                { name: 'ReturnBy', type: sql.NVarChar(50), value: UserId },
-              ]
-            )
+            executeQuery('EXEC [dbo].[HHT_Resorting_ReturnUpdate] @ScanBarcode, @ReturnBy', [
+              {
+                name: 'ScanBarcode',
+                type: sql.NVarChar(255),
+                value: serial.serial.trim(),
+              },
+              { name: 'ReturnBy', type: sql.NVarChar(50), value: UserId },
+            ])
           )
         );
       }
@@ -784,8 +754,7 @@ export const updateResortingReturn = async (req, res) => {
       let status = 'T';
 
       if (hasAny343Errors || hasAny311Errors) {
-        responseMessage +=
-          ' - Some SAP transactions failed and logged for retry';
+        responseMessage += ' - Some SAP transactions failed and logged for retry';
 
         const allErrors = [];
         if (errorMessages343.length > 0) {
@@ -835,17 +804,14 @@ export const updateResortingReturn = async (req, res) => {
           const chunk = allSerialNumbers.slice(j, j + 100);
           await Promise.all(
             chunk.map(serial =>
-              executeQuery(
-                'EXEC [dbo].[HHT_Resorting_ReturnUpdate] @ScanBarcode, @ReturnBy',
-                [
-                  {
-                    name: 'ScanBarcode',
-                    type: sql.NVarChar(255),
-                    value: serial.serial.trim(),
-                  },
-                  { name: 'ReturnBy', type: sql.NVarChar(50), value: UserId },
-                ]
-              )
+              executeQuery('EXEC [dbo].[HHT_Resorting_ReturnUpdate] @ScanBarcode, @ReturnBy', [
+                {
+                  name: 'ScanBarcode',
+                  type: sql.NVarChar(255),
+                  value: serial.serial.trim(),
+                },
+                { name: 'ReturnBy', type: sql.NVarChar(50), value: UserId },
+              ])
             )
           );
         }
@@ -855,10 +821,7 @@ export const updateResortingReturn = async (req, res) => {
           Message: `Database updated, but SAP transactions failed: ${processError.message}`,
         });
       } catch (dbError) {
-        console.error(
-          'Error updating resorting return in DB after SAP failure:',
-          dbError
-        );
+        console.error('Error updating resorting return in DB after SAP failure:', dbError);
         res.status(500).json({
           Status: 'F',
           Message: 'Failed to process return in both SAP and database',

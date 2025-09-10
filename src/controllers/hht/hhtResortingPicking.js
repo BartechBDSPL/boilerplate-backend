@@ -1,40 +1,20 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import axios from 'axios';
 import { format } from 'date-fns';
 import chalk from 'chalk';
 
 export const insertPalletBarcodeResorting = async (req, res) => {
   // console.log(chalk.blue("[insertPalletBarcodeResorting] ====== STARTING OPERATION ======"));
-  const {
-    OrderNo,
-    Material,
-    Barcode,
-    PickOrderFlag,
-    UserId,
-    PendingPick,
-    ReqQty,
-    TotalPicked,
-    BATCH,
-  } = req.body;
-  console.log(
-    chalk.blue('[insertPalletBarcodeResorting] called with body:'),
-    req.body
-  );
+  const { OrderNo, Material, Barcode, PickOrderFlag, UserId, PendingPick, ReqQty, TotalPicked, BATCH } = req.body;
+  console.log(chalk.blue('[insertPalletBarcodeResorting] called with body:'), req.body);
 
   try {
     // console.log(chalk.blue("[insertPalletBarcodeResorting] Executing pallet location query..."));
-    const palletLocationResult = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_PalletLocation_Resorting] @PalletBarcode`,
-      [{ name: 'PalletBarcode', type: sql.NVarChar, value: Barcode }]
-    );
-    console.log(
-      chalk.green('[insertPalletBarcodeResorting] Pallet location result:'),
-      palletLocationResult
-    );
+    const palletLocationResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_PalletLocation_Resorting] @PalletBarcode`, [
+      { name: 'PalletBarcode', type: sql.NVarChar, value: Barcode },
+    ]);
+    console.log(chalk.green('[insertPalletBarcodeResorting] Pallet location result:'), palletLocationResult);
 
     const palletLocationData = palletLocationResult[0];
     const qcStatusOfPallet = palletLocationData.QCStatus;
@@ -117,9 +97,7 @@ export const insertPalletBarcodeResorting = async (req, res) => {
         if (!blockResponse.data.GoodsMovementHeadRet?.MAT_DOC) {
           blockError = true;
           sapError = true;
-          blockErrorMessage =
-            blockResponse.data.Return?.[0]?.MESSAGE ||
-            'Failed to block stock in SAP';
+          blockErrorMessage = blockResponse.data.Return?.[0]?.MESSAGE || 'Failed to block stock in SAP';
           errorMessage = `Block Stock Error: ${blockErrorMessage}`;
           // console.log(chalk.red("[insertPalletBarcodeResorting] Block stock failed:"), blockErrorMessage);
 
@@ -366,9 +344,7 @@ export const insertPalletBarcodeResorting = async (req, res) => {
         if (!transferResponse.data.GoodsMovementHeadRet?.MAT_DOC) {
           transferError = true;
           sapError = true;
-          transferErrorMessage =
-            transferResponse.data.Return?.[0]?.MESSAGE ||
-            'Failed to transfer stock in SAP';
+          transferErrorMessage = transferResponse.data.Return?.[0]?.MESSAGE || 'Failed to transfer stock in SAP';
           // console.log(chalk.red("[insertPalletBarcodeResorting] Transfer failed:"), transferErrorMessage);
 
           // If we already had a block error, combine the messages
@@ -625,20 +601,14 @@ export const insertPalletBarcodeResorting = async (req, res) => {
       },
     ];
 
-    console.log(
-      chalk.cyan('[insertPalletBarcodeResorting] Stored procedure parameters:'),
-      params
-    );
+    console.log(chalk.cyan('[insertPalletBarcodeResorting] Stored procedure parameters:'), params);
 
     const result = await executeQuery(
       `EXEC [dbo].[HHT_FGPick_Resorting_PalletValidation] 
                 @DeliveryNo, @Material, @Barcode, @PickOrderFlag, @Batch, @UserId, @PendingPick, @ReqQty, @TotalPicked`,
       params
     );
-    console.log(
-      chalk.green('[insertPalletBarcodeResorting] Stored procedure result:'),
-      result
-    );
+    console.log(chalk.green('[insertPalletBarcodeResorting] Stored procedure result:'), result);
 
     // Return response with proper Status from stored procedure
     const response = {
@@ -660,43 +630,24 @@ export const insertPalletBarcodeResorting = async (req, res) => {
       error: 'Failed to execute stored procedure',
       details: error.message,
     };
-    console.error(
-      chalk.red('[insertPalletBarcodeResorting] General error:'),
-      error
-    );
-    console.error(
-      chalk.red('[insertPalletBarcodeResorting] ERROR RESPONSE:'),
-      errorResponse
-    );
+    console.error(chalk.red('[insertPalletBarcodeResorting] General error:'), error);
+    console.error(chalk.red('[insertPalletBarcodeResorting] ERROR RESPONSE:'), errorResponse);
     res.status(500).json(errorResponse);
   }
 };
 
 export const validatePalletBarcodeResorting = async (req, res) => {
-  const {
-    OrderNo,
-    Material,
-    Barcode,
-    PickOrderFlag,
-    UserId,
-    PendingPick,
-    ReqQty,
-    TotalPicked,
-    BATCH,
-  } = req.body;
+  const { OrderNo, Material, Barcode, PickOrderFlag, UserId, PendingPick, ReqQty, TotalPicked, BATCH } = req.body;
   // console.log(req.body);
   try {
-    const palletLocationResult = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_PalletLocation_Resorting] @PalletBarcode`,
-      [{ name: 'PalletBarcode', type: sql.NVarChar, value: Barcode }]
-    );
+    const palletLocationResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_PalletLocation_Resorting] @PalletBarcode`, [
+      { name: 'PalletBarcode', type: sql.NVarChar, value: Barcode },
+    ]);
 
     const palletLocationData = palletLocationResult[0];
     const qcStatusOfPallet = palletLocationData.QCStatus;
     if (palletLocationData.Status == 'F') {
-      return res
-        .json({ Status: 'F', Message: palletLocationData.Message })
-        .status(200);
+      return res.json({ Status: 'F', Message: palletLocationData.Message }).status(200);
     }
 
     if (palletLocationData.Batch !== BATCH) {
@@ -754,12 +705,8 @@ export const getOrderPickingDetailsData = async (req, res) => {
     const formatted = result.map(row => ({
       ...row,
       MATERIAL: row.MATERIAL ? row.MATERIAL.replace(/^0+/, '') : row.MATERIAL,
-      ORDER_NUMBER: row.ORDER_NUMBER
-        ? row.ORDER_NUMBER.replace(/^0+/, '')
-        : row.ORDER_NUMBER,
-      PickedDate: row.PickedDate
-        ? format(new Date(row.PickedDate), 'yyyy-MM-dd HH:mm:ss')
-        : null,
+      ORDER_NUMBER: row.ORDER_NUMBER ? row.ORDER_NUMBER.replace(/^0+/, '') : row.ORDER_NUMBER,
+      PickedDate: row.PickedDate ? format(new Date(row.PickedDate), 'yyyy-MM-dd HH:mm:ss') : null,
     }));
     res.json(formatted);
   } catch (error) {

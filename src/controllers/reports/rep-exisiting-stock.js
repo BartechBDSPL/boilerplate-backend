@@ -1,20 +1,10 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const getESUDetails = async (req, res) => {
-  const {
-    ORDER_NUMBER,
-    MATERIAL,
-    MATERIAL_TEXT,
-    BATCH,
-    STORAGE_LOCATION,
-    FromDate,
-    ToDate,
-  } = req.body;
+  const { ORDER_NUMBER, MATERIAL, MATERIAL_TEXT, BATCH, STORAGE_LOCATION, FromDate, ToDate } = req.body;
 
   try {
-    const paddedOrderNumber = ORDER_NUMBER
-      ? ORDER_NUMBER.padStart(12, '0')
-      : null;
+    const paddedOrderNumber = ORDER_NUMBER ? ORDER_NUMBER.padStart(12, '0') : null;
     const paddedMaterial = MATERIAL ? MATERIAL.padStart(18, '0') : null;
 
     const result = await executeQuery(
@@ -56,20 +46,10 @@ export const getESUDetails = async (req, res) => {
 };
 
 export const getESUDispatch = async (req, res) => {
-  const {
-    ORDER_NUMBER,
-    MATERIAL,
-    MATERIAL_TEXT,
-    BATCH,
-    STORAGE_LOCATION,
-    FromDate,
-    ToDate,
-  } = req.body;
+  const { ORDER_NUMBER, MATERIAL, MATERIAL_TEXT, BATCH, STORAGE_LOCATION, FromDate, ToDate } = req.body;
 
   try {
-    const paddedOrderNumber = ORDER_NUMBER
-      ? ORDER_NUMBER.padStart(12, '0')
-      : null;
+    const paddedOrderNumber = ORDER_NUMBER ? ORDER_NUMBER.padStart(12, '0') : null;
     const paddedMaterial = MATERIAL ? MATERIAL.padStart(18, '0') : null;
 
     const result = await executeQuery(

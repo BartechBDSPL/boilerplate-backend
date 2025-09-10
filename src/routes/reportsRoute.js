@@ -28,144 +28,64 @@ const router = express.Router();
 
 router.post('/fg-label-printing', auth, reportController.reportFGPrintingdata);
 //Pallet Report
-router.post(
-  '/pallet-serial-no',
-  auth,
-  palletReportController.getFGLabelSerialNoInfo
-);
+router.post('/pallet-serial-no', auth, palletReportController.getFGLabelSerialNoInfo);
 //Inward Report
-router.post(
-  '/rep-inward-details',
-  auth,
-  inwardReportController.getInwardDetails
-);
+router.post('/rep-inward-details', auth, inwardReportController.getInwardDetails);
 //Good Receipt Report
 router.post('/rep-good-receipt-details', auth, goodReceiptReport.getGRDetails);
-router.post(
-  '/rep-summary-till-qc',
-  auth,
-  goodReceiptReport.getSummaryReportTillQC
-);
+router.post('/rep-summary-till-qc', auth, goodReceiptReport.getSummaryReportTillQC);
 //QC report
 router.post('/rep-qc-details', auth, qcDetailsReport.getQCDetails);
 //Put Away Report
 router.post('/rep-put-away', auth, putAwayReports.putAwayDetails);
 //Reprint reports
-router.post(
-  '/rep-fg-label-reprint',
-  auth,
-  fgLabelReprintingController.getRePrintFGLabelDetails
-);
+router.post('/rep-fg-label-reprint', auth, fgLabelReprintingController.getRePrintFGLabelDetails);
 //Material Wise Stock Report
-router.post(
-  '/rep-material-wise-stock',
-  auth,
-  materialWiseStockReport.getMaterialWiseStock
-);
+router.post('/rep-material-wise-stock', auth, materialWiseStockReport.getMaterialWiseStock);
 //Location Wise Stock Report
-router.post(
-  '/rep-location-wise-stock',
-  auth,
-  locationWiseStockReport.getLocationWiseStock
-);
+router.post('/rep-location-wise-stock', auth, locationWiseStockReport.getLocationWiseStock);
 //Batcg Wise Stock Report
-router.post(
-  '/rep-batch-wise-stock',
-  auth,
-  batchWiseStockReport.getLocationMaterialBatchWiseStock
-);
+router.post('/rep-batch-wise-stock', auth, batchWiseStockReport.getLocationMaterialBatchWiseStock);
 // Location Quantity Details
-router.post(
-  '/rep-location-qty-details',
-  auth,
-  locationqtydetails.getLocationQtyDetails
-);
+router.post('/rep-location-qty-details', auth, locationqtydetails.getLocationQtyDetails);
 // Pallet Split Removed Boxes
-router.post(
-  '/rep-pallet-split-removed-boxes',
-  auth,
-  palletSplitRemovedBoxesController.getRemovedBoxes
-);
-router.post(
-  '/rep-pallet-split-log',
-  auth,
-  palletSplitRemovedBoxesController.getPalletSplitLog
-);
+router.post('/rep-pallet-split-removed-boxes', auth, palletSplitRemovedBoxesController.getRemovedBoxes);
+router.post('/rep-pallet-split-log', auth, palletSplitRemovedBoxesController.getPalletSplitLog);
 
 // Pallet Merge Report
 router.post('/rep-pallet-merge', auth, palletMergeReport.getPalletMergeReport);
 
 // Internal Movement Report
-router.post(
-  '/rep-internal-movement',
-  auth,
-  internalMovementReport.getInternalMovementDetails
-);
+router.post('/rep-internal-movement', auth, internalMovementReport.getInternalMovementDetails);
 
 // Material Picking Report
-router.post(
-  '/rep-material-picking',
-  auth,
-  materialPickingReport.getFGMaterialPickingDetails
-);
+router.post('/rep-material-picking', auth, materialPickingReport.getFGMaterialPickingDetails);
 
 // Exisiting Stock IN report
 router.post('/rep-existing-stock-in', auth, exisitingStockReport.getESUDetails);
 
 // Exisiting Stock Dispatch report
-router.post(
-  '/rep-existing-stock-dispatch',
-  auth,
-  exisitingStockReport.getESUDispatch
-);
+router.post('/rep-existing-stock-dispatch', auth, exisitingStockReport.getESUDispatch);
 
 // Resorting Picking Report
-router.post(
-  '/rep-resorting-picking',
-  auth,
-  resortingPickingReport.getResortingPickingDetails
-);
+router.post('/rep-resorting-picking', auth, resortingPickingReport.getResortingPickingDetails);
 
 // Excess Production Order Report
-router.post(
-  '/rep-excess-production-order',
-  auth,
-  excessProductionOrderReport.getExcessProductionOrderDetails
-);
+router.post('/rep-excess-production-order', auth, excessProductionOrderReport.getExcessProductionOrderDetails);
 
 // Material Ageing Report
-router.post(
-  '/rep-material-ageing',
-  auth,
-  materialAgeingReport.getMaterialAgeingReport
-);
+router.post('/rep-material-ageing', auth, materialAgeingReport.getMaterialAgeingReport);
 
 // Material Receipt Report
-router.post(
-  '/rep-material-receipt',
-  auth,
-  materialReceiptReport.getMaterialReceiptReport
-);
+router.post('/rep-material-receipt', auth, materialReceiptReport.getMaterialReceiptReport);
 
 // Stock Transfer Picking Report
-router.post(
-  '/rep-stock-transfer-picking',
-  auth,
-  stockTransferPickingReport.getStockTransferPicking
-);
+router.post('/rep-stock-transfer-picking', auth, stockTransferPickingReport.getStockTransferPicking);
 
 // Warehouse Scrapping Report
-router.post(
-  '/rep-warehouse-scrapping',
-  auth,
-  warehouseScrappingReport.getWarehouseScrapping
-);
+router.post('/rep-warehouse-scrapping', auth, warehouseScrappingReport.getWarehouseScrapping);
 
 // Resorting Return Report
-router.post(
-  '/rep-resorting-return',
-  auth,
-  resortingReturnReport.getResortingReturn
-);
+router.post('/rep-resorting-return', auth, resortingReturnReport.getResortingReturn);
 
 export default router;

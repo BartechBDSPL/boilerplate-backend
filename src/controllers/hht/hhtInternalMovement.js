@@ -1,9 +1,6 @@
 import { executeQuery, sql } from '../../config/db.js';
 import axios from 'axios';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import { format } from 'date-fns';
 
 export const internalBarcodeValidation = async (req, res) => {
@@ -69,14 +66,7 @@ export const internalBarcodePalletValidation = async (req, res) => {
 };
 
 export const IntBarcodeDataUpdate = async (req, res) => {
-  const {
-    V_ScanBarcodes,
-    UserId,
-    PlantCode,
-    OldLocation,
-    NewLocation,
-    isExisting,
-  } = req.body;
+  const { V_ScanBarcodes, UserId, PlantCode, OldLocation, NewLocation, isExisting } = req.body;
 
   try {
     if (!V_ScanBarcodes) {
@@ -93,34 +83,25 @@ export const IntBarcodeDataUpdate = async (req, res) => {
     const gmCode = '04';
 
     // Validate locations first
-    const oldLocationResult = await executeQuery(
-      `EXEC [dbo].[Sp_Bin_GetStorageLocation] @BinNo`,
-      [{ name: 'BinNo', type: sql.NVarChar(20), value: OldLocation }]
-    );
+    const oldLocationResult = await executeQuery(`EXEC [dbo].[Sp_Bin_GetStorageLocation] @BinNo`, [
+      { name: 'BinNo', type: sql.NVarChar(20), value: OldLocation },
+    ]);
 
     if (oldLocationResult[0].Status === 'F') {
-      return res
-        .status(400)
-        .json({ Status: 'F', Message: oldLocationResult[0].Message });
+      return res.status(400).json({ Status: 'F', Message: oldLocationResult[0].Message });
     }
 
-    const newLocationResult = await executeQuery(
-      `EXEC [dbo].[Sp_Bin_GetStorageLocation] @BinNo`,
-      [{ name: 'BinNo', type: sql.NVarChar(20), value: NewLocation }]
-    );
+    const newLocationResult = await executeQuery(`EXEC [dbo].[Sp_Bin_GetStorageLocation] @BinNo`, [
+      { name: 'BinNo', type: sql.NVarChar(20), value: NewLocation },
+    ]);
 
     if (newLocationResult[0].Status === 'F') {
-      return res
-        .status(400)
-        .json({ Status: 'F', Message: newLocationResult[0].Message });
+      return res.status(400).json({ Status: 'F', Message: newLocationResult[0].Message });
     }
 
-    const sameWarehouse =
-      oldLocationResult[0].WarehouseCode === newLocationResult[0].WarehouseCode;
+    const sameWarehouse = oldLocationResult[0].WarehouseCode === newLocationResult[0].WarehouseCode;
 
-    const palletGroups = V_ScanBarcodes.split('*').filter(group =>
-      group.trim()
-    );
+    const palletGroups = V_ScanBarcodes.split('*').filter(group => group.trim());
     const isExistingValues = isExisting ? isExisting.split('$') : [];
 
     // Process each pallet group
@@ -142,33 +123,25 @@ export const IntBarcodeDataUpdate = async (req, res) => {
           }
 
           if (serialList) {
-            const serials = currentIsExisting
-              ? [serialList]
-              : serialList.split('$').filter(s => s);
+            const serials = currentIsExisting ? [serialList] : serialList.split('$').filter(s => s);
             const currentPalletBarcode = pallet;
             const parsedQuantity = parseFloat(quantity || 0);
 
-            const delimiterCount = (currentPalletBarcode.match(/\|/g) || [])
-              .length;
+            const delimiterCount = (currentPalletBarcode.match(/\|/g) || []).length;
             let uomData;
 
             let palletLocationResult;
 
-            palletLocationResult = await executeQuery(
-              `EXEC [dbo].[HHT_FGPick_PalletLocation] @PalletBarcode`,
-              [
-                {
-                  name: 'PalletBarcode',
-                  type: sql.NVarChar,
-                  value: currentPalletBarcode,
-                },
-              ]
-            );
+            palletLocationResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_PalletLocation] @PalletBarcode`, [
+              {
+                name: 'PalletBarcode',
+                type: sql.NVarChar,
+                value: currentPalletBarcode,
+              },
+            ]);
 
             if (palletLocationResult[0].Status !== 'T') {
-              throw new Error(
-                `Invalid pallet location: ${palletLocationResult[0].Message}`
-              );
+              throw new Error(`Invalid pallet location: ${palletLocationResult[0].Message}`);
             }
 
             uomData = palletLocationResult[0];
@@ -182,16 +155,13 @@ export const IntBarcodeDataUpdate = async (req, res) => {
             let Batch = '';
 
             try {
-              const palletDetails = await executeQuery(
-                `EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`,
-                [
-                  {
-                    name: 'ScanBarcode',
-                    type: sql.NVarChar,
-                    value: currentPalletBarcode,
-                  },
-                ]
-              );
+              const palletDetails = await executeQuery(`EXEC [dbo].[HHT_PalletSAPDetails] @ScanBarcode`, [
+                {
+                  name: 'ScanBarcode',
+                  type: sql.NVarChar,
+                  value: currentPalletBarcode,
+                },
+              ]);
 
               if (palletDetails && palletDetails.length > 0) {
                 OrderNo = palletDetails[0].ORDER_NUMBER || OrderNo;
@@ -217,9 +187,7 @@ export const IntBarcodeDataUpdate = async (req, res) => {
               SPEC_STOCK: '',
               MVT_IND: '',
               ITEM_TEXT:
-                currentPalletBarcode.length > 45
-                  ? currentPalletBarcode.substring(0, 45)
-                  : currentPalletBarcode,
+                currentPalletBarcode.length > 45 ? currentPalletBarcode.substring(0, 45) : currentPalletBarcode,
               ENTRY_QNT: parsedQuantity,
               ENTRY_UOM: uomData.Unit,
               ENTRY_UOM_ISO: uomData.UnitISO,
@@ -263,14 +231,10 @@ export const IntBarcodeDataUpdate = async (req, res) => {
         TESTRUN: false,
       };
       try {
-        const response = await axios.post(
-          `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-          sapRequestBody,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 30000,
-          }
-        );
+        const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 30000,
+        });
 
         const sapResponse = response.data;
         materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
@@ -308,9 +272,7 @@ export const IntBarcodeDataUpdate = async (req, res) => {
         }
 
         if (!materialDocument) {
-          const errorMessage =
-            sapResponse.Return[0]?.MESSAGE ||
-            'Failed to get material document number from SAP';
+          const errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
           errorMessages.push(errorMessage);
 
           // Log error for each item that failed
@@ -345,8 +307,7 @@ export const IntBarcodeDataUpdate = async (req, res) => {
         });
 
         const errorMessage =
-          axiosError.response?.data?.Message ||
-          axiosError.response?.data?.ModelState
+          axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
             ? JSON.stringify(axiosError.response.data.ModelState)
             : axiosError.message;
 

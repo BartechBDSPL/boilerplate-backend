@@ -34,8 +34,7 @@ export const getAllUserType = async (req, res) => {
 };
 
 export const updateUserRoles = async (req, res) => {
-  const { id, user_type, web_menu_access, hht_menu_access, updated_by } =
-    req.body;
+  const { id, user_type, web_menu_access, hht_menu_access, updated_by } = req.body;
 
   try {
     const result = await executeQuery(

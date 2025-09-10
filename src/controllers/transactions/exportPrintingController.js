@@ -17,13 +17,10 @@ export const getPalletSrNo = async (req, res) => {
   const paddedOrderNumber = ORDER_NUMBER.padStart(12, '0');
   const paddedMaterial = MATERIAL.padStart(18, '0');
 
-  const labelSerialResult = await executeQuery(
-    'EXEC Sp_Find_PalletSrNo @ORDER_NUMBER, @MATERIAL',
-    [
-      { name: 'ORDER_NUMBER', type: sql.NVarChar, value: paddedOrderNumber },
-      { name: 'MATERIAL', type: sql.NVarChar, value: paddedMaterial },
-    ]
-  );
+  const labelSerialResult = await executeQuery('EXEC Sp_Find_PalletSrNo @ORDER_NUMBER, @MATERIAL', [
+    { name: 'ORDER_NUMBER', type: sql.NVarChar, value: paddedOrderNumber },
+    { name: 'MATERIAL', type: sql.NVarChar, value: paddedMaterial },
+  ]);
 
   const palletSrNo = labelSerialResult[0].SrNo;
   return res.status(200).json({ palletSrNo });
@@ -67,9 +64,7 @@ export const updateLabelPrinting = async (req, res) => {
     // Check if printer is reachable before proceeding
     const printerInRange = await isPrinterReachable(printerIP, portNumber);
     if (!printerInRange) {
-      return res
-        .status(200)
-        .json({ Status: 'F', Message: 'Printer out of range' });
+      return res.status(200).json({ Status: 'F', Message: 'Printer out of range' });
     }
 
     // Execute initial operations concurrently
@@ -93,29 +88,23 @@ export const updateLabelPrinting = async (req, res) => {
           { name: 'OrderType', type: sql.NVarChar, value: 'EXPORT' },
         ]
       ),
-      executeQuery(
-        'EXEC Sp_Upsert_FG_Label_PalletNo @Order_Number, @Material, @GeneratedPalletNo',
-        [
-          {
-            name: 'Order_Number',
-            type: sql.NVarChar(255),
-            value: ORDER_NUMBER,
-          },
-          { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
-          {
-            name: 'GeneratedPalletNo',
-            type: sql.Int,
-            value: parseInt(Printed_Labels),
-          },
-        ]
-      ),
+      executeQuery('EXEC Sp_Upsert_FG_Label_PalletNo @Order_Number, @Material, @GeneratedPalletNo', [
+        {
+          name: 'Order_Number',
+          type: sql.NVarChar(255),
+          value: ORDER_NUMBER,
+        },
+        { name: 'Material', type: sql.NVarChar(255), value: MATERIAL },
+        {
+          name: 'GeneratedPalletNo',
+          type: sql.Int,
+          value: parseInt(Printed_Labels),
+        },
+      ]),
     ]);
 
     // Check results of concurrent operations
-    if (
-      updateLabelCount[0].Status === 'F' ||
-      upsertPalletNoResult[0].Status === 'F'
-    ) {
+    if (updateLabelCount[0].Status === 'F' || upsertPalletNoResult[0].Status === 'F') {
       return res.status(400).json({
         error: 'Failed to update initial records',
         details: {
@@ -129,9 +118,7 @@ export const updateLabelPrinting = async (req, res) => {
     const printQuantities = PrintQty.split('$');
 
     if (serialNumbers.length !== printQuantities.length) {
-      return res
-        .status(400)
-        .json({ error: 'Serial numbers and print quantities do not match' });
+      return res.status(400).json({ error: 'Serial numbers and print quantities do not match' });
     }
 
     tempFilePath = path.join(__dirname, `combined_temp_${Date.now()}.prn`);
@@ -142,11 +129,7 @@ export const updateLabelPrinting = async (req, res) => {
       const totalLabels = serialNumbers.length;
 
       // Process all batches sequentially
-      for (
-        let batchStart = 0;
-        batchStart < totalLabels;
-        batchStart += batchSize
-      ) {
+      for (let batchStart = 0; batchStart < totalLabels; batchStart += batchSize) {
         const batchEnd = Math.min(batchStart + batchSize, totalLabels);
         const currentBatch = serialNumbers.slice(batchStart, batchEnd);
         const currentQtyBatch = printQuantities.slice(batchStart, batchEnd);

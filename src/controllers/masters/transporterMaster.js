@@ -1,16 +1,8 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const insertTransporter = async (req, res) => {
-  const {
-    TransporterName,
-    GSTNo,
-    ContactPerson,
-    ContactMobile,
-    ContactPhone,
-    ContactEmail,
-    VehicleNumber,
-    CreatedBy,
-  } = req.body;
+  const { TransporterName, GSTNo, ContactPerson, ContactMobile, ContactPhone, ContactEmail, VehicleNumber, CreatedBy } =
+    req.body;
 
   try {
     const result = await executeQuery(
@@ -49,16 +41,8 @@ export const getAllTransporters = async (req, res) => {
 };
 
 export const updateTransporter = async (req, res) => {
-  const {
-    TransporterName,
-    GSTNo,
-    ContactPerson,
-    ContactMobile,
-    ContactPhone,
-    VehicleNumber,
-    ContactEmail,
-    UpdatedBy,
-  } = req.body;
+  const { TransporterName, GSTNo, ContactPerson, ContactMobile, ContactPhone, VehicleNumber, ContactEmail, UpdatedBy } =
+    req.body;
 
   try {
     const result = await executeQuery(

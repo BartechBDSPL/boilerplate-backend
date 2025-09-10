@@ -86,20 +86,16 @@ function printToTscPrinter(prnFilePath, ip, port) {
 export const fetchPalletBarcode = async (req, res) => {
   const { ScanBarcode } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_PalletMerge_Fetch] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
-    const materialResultExist = await executeQuery(
-      'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-      [
-        {
-          name: 'OrderNumber',
-          type: sql.NVarChar,
-          value: result[0].ORDER_NUMBER,
-        },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_PalletMerge_Fetch] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
+    const materialResultExist = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+      {
+        name: 'OrderNumber',
+        type: sql.NVarChar,
+        value: result[0].ORDER_NUMBER,
+      },
+    ]);
 
     res.json({
       PalletDetails: result[0],
@@ -132,29 +128,22 @@ export const updatePalletBarcode = async (req, res) => {
     const portNumber = parseInt(printerPort) || 9100;
     const printerInRange = await isPrinterReachable(printerIP, portNumber);
     if (!printerInRange) {
-      return res
-        .status(200)
-        .json({ Status: 'F', Message: 'Printer out of range' });
+      return res.status(200).json({ Status: 'F', Message: 'Printer out of range' });
     }
-    const pcsInBoxResult = await executeQuery(
-      `EXEC [dbo].[HHT_Pallet_DetailstoPrinting] @ORDER_NUMBER, @MATERIAL`,
-      [
-        {
-          name: 'ORDER_NUMBER',
-          type: sql.NVarChar(100),
-          value: OrderNo.padStart(12, '0'),
-        },
-        {
-          name: 'MATERIAL',
-          type: sql.NVarChar(100),
-          value: Material.padStart(18, '0'),
-        },
-      ]
-    );
+    const pcsInBoxResult = await executeQuery(`EXEC [dbo].[HHT_Pallet_DetailstoPrinting] @ORDER_NUMBER, @MATERIAL`, [
+      {
+        name: 'ORDER_NUMBER',
+        type: sql.NVarChar(100),
+        value: OrderNo.padStart(12, '0'),
+      },
+      {
+        name: 'MATERIAL',
+        type: sql.NVarChar(100),
+        value: Material.padStart(18, '0'),
+      },
+    ]);
 
-    const pcsInBox = Math.floor(
-      pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR
-    );
+    const pcsInBox = Math.floor(pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR);
     const decodedBarcodes = decodeURIComponent(ScanBarcode);
     const uniqueNoResult = await executeQuery(
       `EXEC [dbo].[HHT_FG_Pallet_GenrateUniqueNo] @Material, @OrderNo, @PalletCount`,

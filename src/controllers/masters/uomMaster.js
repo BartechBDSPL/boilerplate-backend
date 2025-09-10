@@ -3,9 +3,7 @@ import { sql } from '../../config/db.js';
 
 export const getAllUom = async (req, res) => {
   try {
-    const getAllUomData = await executeQuery(
-      'EXEC sp_uom_master_get_all_details'
-    );
+    const getAllUomData = await executeQuery('EXEC sp_uom_master_get_all_details');
     res.json(getAllUomData);
   } catch (error) {
     console.error(error);
@@ -15,9 +13,7 @@ export const getAllUom = async (req, res) => {
 
 export const getAllUomUnits = async (req, res) => {
   try {
-    const getAllUnits = await executeQuery(
-      'EXEC sp_uom_master_get_all_uom_unit'
-    );
+    const getAllUnits = await executeQuery('EXEC sp_uom_master_get_all_uom_unit');
     res.json(getAllUnits);
   } catch (error) {
     console.error(error);
@@ -28,14 +24,11 @@ export const getAllUomUnits = async (req, res) => {
 export const updateUom = async (req, res) => {
   const { unit, description, user } = req.body;
   try {
-    const updateDetails = await executeQuery(
-      'EXEC sp_uom_master_update @unit, @description, @updated_by',
-      [
-        { name: 'unit', type: sql.NVarChar, value: unit },
-        { name: 'description', type: sql.NVarChar, value: description },
-        { name: 'updated_by', type: sql.NVarChar, value: user },
-      ]
-    );
+    const updateDetails = await executeQuery('EXEC sp_uom_master_update @unit, @description, @updated_by', [
+      { name: 'unit', type: sql.NVarChar, value: unit },
+      { name: 'description', type: sql.NVarChar, value: description },
+      { name: 'updated_by', type: sql.NVarChar, value: user },
+    ]);
 
     const { Status, Message } = updateDetails[0];
 
@@ -49,14 +42,11 @@ export const updateUom = async (req, res) => {
 export const insertUom = async (req, res) => {
   const { unit, description, user } = req.body;
   try {
-    const insertDetails = await executeQuery(
-      'EXEC sp_uom_master_insert @unit, @description, @created_by',
-      [
-        { name: 'unit', type: sql.NVarChar, value: unit },
-        { name: 'description', type: sql.NVarChar, value: description },
-        { name: 'created_by', type: sql.NVarChar, value: user },
-      ]
-    );
+    const insertDetails = await executeQuery('EXEC sp_uom_master_insert @unit, @description, @created_by', [
+      { name: 'unit', type: sql.NVarChar, value: unit },
+      { name: 'description', type: sql.NVarChar, value: description },
+      { name: 'created_by', type: sql.NVarChar, value: user },
+    ]);
 
     const { Status, Message } = insertDetails[0];
 

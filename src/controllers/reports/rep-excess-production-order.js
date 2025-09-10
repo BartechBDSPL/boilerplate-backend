@@ -5,9 +5,7 @@ export const getExcessProductionOrderDetails = async (req, res) => {
 
   try {
     // Padding similar to other reports
-    const paddedOrderNumber = ORDER_NUMBER
-      ? ORDER_NUMBER.padStart(12, '0')
-      : '';
+    const paddedOrderNumber = ORDER_NUMBER ? ORDER_NUMBER.padStart(12, '0') : '';
     const paddedMaterial = MATERIAL ? MATERIAL.padStart(18, '0') : '';
 
     const result = await executeQuery(

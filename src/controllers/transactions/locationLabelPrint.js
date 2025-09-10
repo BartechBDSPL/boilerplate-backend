@@ -89,9 +89,7 @@ async function batchPrintToTscPrinter(printJobs, printerIP, printerPort) {
       async () => {
         try {
           // Concatenate all PRN files into a single buffer
-          let combinedContent = Buffer.concat(
-            printJobs.map(job => fs.readFileSync(job.prnFilePath))
-          );
+          let combinedContent = Buffer.concat(printJobs.map(job => fs.readFileSync(job.prnFilePath)));
 
           client.write(combinedContent, err => {
             if (err) {
@@ -134,13 +132,7 @@ async function batchPrintToTscPrinter(printJobs, printerIP, printerPort) {
 }
 
 function preparePrnFile(data) {
-  const templatePath = path.join(
-    __dirname,
-    '..',
-    '..',
-    'prn-printer',
-    'StorageType5050.prn'
-  );
+  const templatePath = path.join(__dirname, '..', '..', 'prn-printer', 'StorageType5050.prn');
   const tempPrnPath = path.join(__dirname, `temp_${Date.now()}.prn`);
 
   try {

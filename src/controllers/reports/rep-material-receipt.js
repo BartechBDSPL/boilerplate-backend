@@ -1,15 +1,7 @@
 import { executeQuery, sql } from '../../config/db.js';
 
 export const getMaterialReceiptReport = async (req, res) => {
-  const {
-    FromDate,
-    ToDate,
-    Material,
-    MaterialText,
-    Batch,
-    FromStorageLocation,
-    ToStorageLocation,
-  } = req.body;
+  const { FromDate, ToDate, Material, MaterialText, Batch, FromStorageLocation, ToStorageLocation } = req.body;
   try {
     const result = await executeQuery(
       'EXEC Sp_Rep_MaterialReceipt @FromDate, @ToDate, @Material, @MaterialText, @Batch, @FromStorageLocation, @ToStorageLocation',

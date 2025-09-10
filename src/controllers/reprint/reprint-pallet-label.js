@@ -18,10 +18,7 @@ function preparePrnFile(data, dpi) {
 
     // Replace placeholders
     // If PalletCount is 1, show empty string, otherwise show PalletCount
-    const palletCountValue =
-      data.PalletCount === 1 || data.PalletCount === '1'
-        ? ''
-        : data.PalletCount;
+    const palletCountValue = data.PalletCount === 1 || data.PalletCount === '1' ? '' : data.PalletCount;
 
     template = template
       .replace(/VItemCode/g, data.Material)
@@ -87,9 +84,7 @@ async function batchPrintToTscPrinter(printJobs, printerIP, printerPort) {
       async () => {
         try {
           // Concatenate all PRN files into a single buffer
-          let combinedContent = Buffer.concat(
-            printJobs.map(job => fs.readFileSync(job.prnFilePath))
-          );
+          let combinedContent = Buffer.concat(printJobs.map(job => fs.readFileSync(job.prnFilePath)));
 
           client.write(combinedContent, err => {
             if (err) {
@@ -154,9 +149,7 @@ export const insertPalletRePrintDetails = async (req, res) => {
   } = req.body;
 
   if (!PrinterIP || !PrinterIP.includes(':')) {
-    return res
-      .status(200)
-      .json({ Status: 'F', Message: 'Invalid printer IP format' });
+    return res.status(200).json({ Status: 'F', Message: 'Invalid printer IP format' });
   }
 
   const [printerIP, printerPort] = PrinterIP.split(':');
@@ -164,19 +157,14 @@ export const insertPalletRePrintDetails = async (req, res) => {
   try {
     const printerInRange = await isPrinterReachable(printerIP, printerPort);
     if (!printerInRange) {
-      return res
-        .status(200)
-        .json({ Status: 'F', Message: 'Printer out of range' });
+      return res.status(200).json({ Status: 'F', Message: 'Printer out of range' });
     }
     const printJobs = [];
-    const pcsInBoxResult = await executeQuery(
-      `EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode }]
-    );
+    const pcsInBoxResult = await executeQuery(`EXEC [dbo].[HHT_Pallet_DetailsforPrinting] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode },
+    ]);
 
-    const pcsInBox = Math.floor(
-      pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR
-    );
+    const pcsInBox = Math.floor(pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR);
     for (let i = 0; i < RePrintQty; i++) {
       const printData = {
         Material: Item_Code,
@@ -258,8 +246,7 @@ export const insertPalletRePrintDetails = async (req, res) => {
 
         return res.status(200).json({
           Status: 'T',
-          Message:
-            'Pallet label printing and database insertion completed successfully',
+          Message: 'Pallet label printing and database insertion completed successfully',
           totalLabels: RePrintQty,
         });
       } catch (error) {
@@ -291,8 +278,7 @@ export const insertPalletRePrintDetails = async (req, res) => {
 };
 
 export const getRePrintPalletData = async (req, res) => {
-  const { FromDate, ToDate, ORDER_NUMBER, User, MATERIAL, BATCH, Tank, Line } =
-    req.body;
+  const { FromDate, ToDate, ORDER_NUMBER, User, MATERIAL, BATCH, Tank, Line } = req.body;
 
   try {
     const result = await executeQuery(

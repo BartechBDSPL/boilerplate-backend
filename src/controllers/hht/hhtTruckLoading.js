@@ -4,10 +4,9 @@ export const truckLoadingPalletValidation = async (req, res) => {
   const { ScanBarcode } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TruckLoading_PalletValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TruckLoading_PalletValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
     res.json(result[0]);
   } catch (error) {
     console.error('Error validating truck loading pallet:', error);
@@ -79,10 +78,9 @@ export const getOrderNoData = async (req, res) => {
   const { OrderNo } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TruckLoading_OrderNoGetData] @OrderNo`,
-      [{ name: 'OrderNo', type: sql.NVarChar(50), value: OrderNo }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TruckLoading_OrderNoGetData] @OrderNo`, [
+      { name: 'OrderNo', type: sql.NVarChar(50), value: OrderNo },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error getting order number data:', error);
@@ -92,9 +90,7 @@ export const getOrderNoData = async (req, res) => {
 
 export const getPickedClosedOrders = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TruckLoading_PickedClosedOrder]`
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TruckLoading_PickedClosedOrder]`);
     res.json(result);
   } catch (error) {
     console.error('Error getting picked closed orders:', error);
@@ -106,10 +102,9 @@ export const validateSerialBarcode = async (req, res) => {
   const { ScanBarcode } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TruckLoading_SerialValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TruckLoading_SerialValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
     res.json(result[0]);
   } catch (error) {
     console.error('Error validating serial barcode for truck loading:', error);

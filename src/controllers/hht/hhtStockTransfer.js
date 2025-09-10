@@ -31,13 +31,10 @@ export const pickingTripDetails = async (req, res) => {
 export const removeTripDetails = async (req, res) => {
   const { TripNo, ScanBarcode } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TripDetails_Remove] @TripNo, @ScanBarcode`,
-      [
-        { name: 'TripNo', type: sql.NVarChar(50), value: TripNo },
-        { name: 'ScanBarcode', type: sql.NVarChar(255), value: ScanBarcode },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TripDetails_Remove] @TripNo, @ScanBarcode`, [
+      { name: 'TripNo', type: sql.NVarChar(50), value: TripNo },
+      { name: 'ScanBarcode', type: sql.NVarChar(255), value: ScanBarcode },
+    ]);
     res.status(200).json(result[0]);
   } catch (error) {
     console.error('Error in removeTripDetails:', error);
@@ -48,10 +45,9 @@ export const removeTripDetails = async (req, res) => {
 export const recentTransactionTripDetails = async (req, res) => {
   const { TripNo } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TripDetails_RecentTransaction] @TripNo`,
-      [{ name: 'TripNo', type: sql.NVarChar(50), value: TripNo }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TripDetails_RecentTransaction] @TripNo`, [
+      { name: 'TripNo', type: sql.NVarChar(50), value: TripNo },
+    ]);
     const cleanedResult = result.map(row => ({
       ...row,
       ORDER_NUMBER: row.ORDER_NUMBER?.replace(/^0+/, ''),
@@ -67,10 +63,9 @@ export const recentTransactionTripDetails = async (req, res) => {
 export const closeOrderTripDetails = async (req, res) => {
   const { TripNo } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_TripDetails_OrderClose] @TripNo`,
-      [{ name: 'TripNo', type: sql.NVarChar(50), value: TripNo }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_TripDetails_OrderClose] @TripNo`, [
+      { name: 'TripNo', type: sql.NVarChar(50), value: TripNo },
+    ]);
     res.status(200).json(result[0]);
   } catch (error) {
     console.error('Error in closeOrderTripDetails:', error);
@@ -80,10 +75,7 @@ export const closeOrderTripDetails = async (req, res) => {
 
 export const getClosedOpenTripNos = async (req, res) => {
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GetTripNo]`,
-      []
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GetTripNo]`, []);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error in getClosedOpenTripNos:', error);
@@ -94,10 +86,9 @@ export const getClosedOpenTripNos = async (req, res) => {
 export const getTripNoDetails = async (req, res) => {
   const { TripNo } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GetTripNoDetails] @TripNo`,
-      [{ name: 'TripNo', type: sql.NVarChar(50), value: TripNo }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GetTripNoDetails] @TripNo`, [
+      { name: 'TripNo', type: sql.NVarChar(50), value: TripNo },
+    ]);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error in getTripNoDetails:', error);
@@ -188,26 +179,22 @@ export const insertTripChallanDetails = async (req, res) => {
 export const getTripPalletBarcode = async (req, res) => {
   const { TripNo, Location } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[Sp_TripDetails_GetPalletBarcode] @TripNo`,
-      [{ name: 'TripNo', type: sql.NVarChar(50), value: TripNo }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[Sp_TripDetails_GetPalletBarcode] @TripNo`, [
+      { name: 'TripNo', type: sql.NVarChar(50), value: TripNo },
+    ]);
 
     let finalStatus = 'T';
     let finalMessage = 'Location Updated Successfully';
     for (const row of result) {
       const palletBarcode = row.PalletBarcode;
-      const updateResult = await executeQuery(
-        `EXEC [dbo].[Sp_TripDetails_UpdateLocation] @PalletBarcode, @Location`,
-        [
-          {
-            name: 'PalletBarcode',
-            type: sql.NVarChar(255),
-            value: palletBarcode,
-          },
-          { name: 'Location', type: sql.NVarChar(50), value: Location },
-        ]
-      );
+      const updateResult = await executeQuery(`EXEC [dbo].[Sp_TripDetails_UpdateLocation] @PalletBarcode, @Location`, [
+        {
+          name: 'PalletBarcode',
+          type: sql.NVarChar(255),
+          value: palletBarcode,
+        },
+        { name: 'Location', type: sql.NVarChar(50), value: Location },
+      ]);
       const status = updateResult[0]?.Status || 'F';
       const message = updateResult[0]?.Message || 'Invalid Pallet Scanned.';
       if (status !== 'T') {
@@ -220,8 +207,6 @@ export const getTripPalletBarcode = async (req, res) => {
     res.status(200).json({ Status: finalStatus, Message: finalMessage });
   } catch (error) {
     console.error('Error updating pallet locations:', error);
-    res
-      .status(500)
-      .json({ Status: 'F', Message: 'Failed to update pallet locations' });
+    res.status(500).json({ Status: 'F', Message: 'Failed to update pallet locations' });
   }
 };

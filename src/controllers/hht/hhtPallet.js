@@ -86,20 +86,16 @@ function printToTscPrinter(prnFilePath, ip, port) {
 export const fetchPalletBarcode = async (req, res) => {
   const { ScanBarcode } = req.body;
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Pallet_Fetch] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode }]
-    );
-    const materialResultExist = await executeQuery(
-      'EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber',
-      [
-        {
-          name: 'OrderNumber',
-          type: sql.NVarChar,
-          value: result[0].ORDER_NUMBER,
-        },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FG_Pallet_Fetch] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(70), value: ScanBarcode },
+    ]);
+    const materialResultExist = await executeQuery('EXEC Sp_SubMaterialMaster_GetAllby_OrderNo @OrderNumber', [
+      {
+        name: 'OrderNumber',
+        type: sql.NVarChar,
+        value: result[0].ORDER_NUMBER,
+      },
+    ]);
     res.json({
       PalletDetails: result[0],
       MaterialDetails: materialResultExist,
@@ -131,29 +127,22 @@ export const updatePalletBarcode = async (req, res) => {
     const portNumber = parseInt(printerPort) || 9100;
     const printerInRange = await isPrinterReachable(printerIP, portNumber);
     if (!printerInRange) {
-      return res
-        .status(200)
-        .json({ Status: 'F', Message: 'Printer out of range' });
+      return res.status(200).json({ Status: 'F', Message: 'Printer out of range' });
     }
-    const pcsInBoxResult = await executeQuery(
-      `EXEC [dbo].[HHT_Pallet_DetailstoPrinting] @ORDER_NUMBER, @MATERIAL`,
-      [
-        {
-          name: 'ORDER_NUMBER',
-          type: sql.NVarChar(100),
-          value: OrderNo.padStart(12, '0'),
-        },
-        {
-          name: 'MATERIAL',
-          type: sql.NVarChar(100),
-          value: Material.padStart(18, '0'),
-        },
-      ]
-    );
+    const pcsInBoxResult = await executeQuery(`EXEC [dbo].[HHT_Pallet_DetailstoPrinting] @ORDER_NUMBER, @MATERIAL`, [
+      {
+        name: 'ORDER_NUMBER',
+        type: sql.NVarChar(100),
+        value: OrderNo.padStart(12, '0'),
+      },
+      {
+        name: 'MATERIAL',
+        type: sql.NVarChar(100),
+        value: Material.padStart(18, '0'),
+      },
+    ]);
 
-    const pcsInBox = Math.floor(
-      pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR
-    );
+    const pcsInBox = Math.floor(pcsInBoxResult[0].NUMERATOR / pcsInBoxResult[0].DENOMINATOR);
     const decodedBarcodes = decodeURIComponent(ScanBarcode);
     const uniqueNoResult = await executeQuery(
       `EXEC [dbo].[HHT_FG_Pallet_GenrateUniqueNo] @Material, @OrderNo, @PalletCount`,
@@ -190,10 +179,9 @@ export const updatePalletBarcode = async (req, res) => {
       }
     }
 
-    const getLineResult = await executeQuery(
-      `EXEC [dbo].[HHT_FG_Pallet_GetLineNumber] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode }]
-    );
+    const getLineResult = await executeQuery(`EXEC [dbo].[HHT_FG_Pallet_GetLineNumber] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: PalletBarcode },
+    ]);
 
     const Line = getLineResult[0].Line;
     const palletNumber = PalletBarcode.split('|').pop().replace('FG', '');
@@ -260,13 +248,10 @@ export const updateBoxMergeWithoutPallet = async (req, res) => {
   const { PalletBarcode, SerialNo } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_BoxMerge_WithoutPallet_Update] @PalletBarcode, @SerialNo`,
-      [
-        { name: 'PalletBarcode', type: sql.NVarChar(50), value: PalletBarcode },
-        { name: 'SerialNo', type: sql.NVarChar(70), value: SerialNo },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_BoxMerge_WithoutPallet_Update] @PalletBarcode, @SerialNo`, [
+      { name: 'PalletBarcode', type: sql.NVarChar(50), value: PalletBarcode },
+      { name: 'SerialNo', type: sql.NVarChar(70), value: SerialNo },
+    ]);
     res.json(result[0]);
   } catch (error) {
     console.error('Error updating box merge without pallet:', error);
@@ -315,21 +300,16 @@ export const boxMergeWithPalletPalletValidation = async (req, res) => {
   const { ScanBarcode } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_BoxMerge_WithPallet_PalletValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(50), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_BoxMerge_WithPallet_PalletValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(50), value: ScanBarcode },
+    ]);
 
     const transformed = result.map(item => {
       const serialParts = (item.SerialNo || '').split('|');
       return {
         ...item,
-        ORDER_NUMBER: item.ORDER_NUMBER
-          ? item.ORDER_NUMBER.replace(/^0+/, '')
-          : item.ORDER_NUMBER,
-        MATERIAL: item.MATERIAL
-          ? item.MATERIAL.replace(/^0+/, '')
-          : item.MATERIAL,
+        ORDER_NUMBER: item.ORDER_NUMBER ? item.ORDER_NUMBER.replace(/^0+/, '') : item.ORDER_NUMBER,
+        MATERIAL: item.MATERIAL ? item.MATERIAL.replace(/^0+/, '') : item.MATERIAL,
         BoxNumber: serialParts.length > 3 ? serialParts[3] : null,
       };
     });
@@ -347,8 +327,7 @@ export const updateBoxMergeWithPallet = async (req, res) => {
 
     if (!data || typeof data !== 'string' || !data.includes('$')) {
       return res.status(400).json({
-        error:
-          'Invalid or missing data format. Expected format: PalletBarcode$Serial1$Serial2...',
+        error: 'Invalid or missing data format. Expected format: PalletBarcode$Serial1$Serial2...',
       });
     }
 
@@ -357,9 +336,7 @@ export const updateBoxMergeWithPallet = async (req, res) => {
     const SerialNumbers = parts.slice(1);
 
     if (!PalletBarcode || SerialNumbers.length === 0) {
-      return res
-        .status(400)
-        .json({ error: 'PalletBarcode or SerialNumbers missing' });
+      return res.status(400).json({ error: 'PalletBarcode or SerialNumbers missing' });
     }
 
     const results = [];
@@ -401,9 +378,7 @@ export const updateBoxMergeWithPallet = async (req, res) => {
   } catch (error) {
     console.error('Unhandled error in updateBoxMergeWithPallet:', error);
     if (!res.headersSent) {
-      res
-        .status(500)
-        .json({ Status: 'F', error: 'Server error. Please check logs.' });
+      res.status(500).json({ Status: 'F', error: 'Server error. Please check logs.' });
     }
   }
 };
@@ -412,17 +387,14 @@ export const boxRemovalValidation = async (req, res) => {
   const { ScanBarcode } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_BoxRemovalValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar(50), value: ScanBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_BoxRemovalValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar(50), value: ScanBarcode },
+    ]);
     if (result[0]) {
       result[0].ORDER_NUMBER = result[0].ORDER_NUMBER
         ? result[0].ORDER_NUMBER.replace(/^0+/, '')
         : result[0].ORDER_NUMBER;
-      result[0].MATERIAL = result[0].MATERIAL
-        ? result[0].MATERIAL.replace(/^0+/, '')
-        : result[0].MATERIAL;
+      result[0].MATERIAL = result[0].MATERIAL ? result[0].MATERIAL.replace(/^0+/, '') : result[0].MATERIAL;
     }
     res.json(result[0]);
   } catch (error) {
@@ -439,17 +411,14 @@ export const updateBoxRemoval = async (req, res) => {
 
     for (let barcode of barcodes) {
       if (barcode.trim() !== '') {
-        await executeQuery(
-          `EXEC [dbo].[HHT_BoxRemovalUpdate] @ScanBarcode, @RemovedBy`,
-          [
-            {
-              name: 'ScanBarcode',
-              type: sql.NVarChar(50),
-              value: barcode.trim(),
-            },
-            { name: 'RemovedBy', type: sql.NVarChar(50), value: RemovedBy },
-          ]
-        );
+        await executeQuery(`EXEC [dbo].[HHT_BoxRemovalUpdate] @ScanBarcode, @RemovedBy`, [
+          {
+            name: 'ScanBarcode',
+            type: sql.NVarChar(50),
+            value: barcode.trim(),
+          },
+          { name: 'RemovedBy', type: sql.NVarChar(50), value: RemovedBy },
+        ]);
       }
     }
 

@@ -1,8 +1,5 @@
 import { executeQuery, sql } from '../../config/db.js';
-import {
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-  SAP_SERVER,
-} from '../../utils/constants.js';
+import { SAP_CONNECTOR_MIDDLEWARE_URL, SAP_SERVER } from '../../utils/constants.js';
 import axios from 'axios';
 import { format } from 'date-fns';
 
@@ -10,10 +7,9 @@ export const getUnqiqueOrderNo = async (req, res) => {
   const { UserName } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC HHT_FGPick_Unique_PendingOrders @UserName',
-      [{ name: 'UserName', type: sql.NVarChar, value: UserName }]
-    );
+    const result = await executeQuery('EXEC HHT_FGPick_Unique_PendingOrders @UserName', [
+      { name: 'UserName', type: sql.NVarChar, value: UserName },
+    ]);
     res.json(result);
   } catch (error) {
     console.error(error);
@@ -25,10 +21,9 @@ export const orderNoGetAllData = async (req, res) => {
   const { UserName } = req.body;
 
   try {
-    const result = await executeQuery(
-      'EXEC HHT_FGPick_OrderNoGetDataALL @UserName',
-      [{ name: 'UserName', type: sql.NVarChar, value: UserName }]
-    );
+    const result = await executeQuery('EXEC HHT_FGPick_OrderNoGetDataALL @UserName', [
+      { name: 'UserName', type: sql.NVarChar, value: UserName },
+    ]);
     res.json(result);
   } catch (error) {
     console.error(error);
@@ -40,18 +35,15 @@ export const getMaterialDetailsData = async (req, res) => {
   const { UserName, OrderNo, MatCode } = req.body;
 
   try {
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_MaterialDetailsData] @UserName, @OrderNo, @MatCode`,
-      [
-        { name: 'UserName', type: sql.NVarChar(50), value: UserName },
-        { name: 'OrderNo', type: sql.NVarChar(50), value: OrderNo },
-        {
-          name: 'MatCode',
-          type: sql.NVarChar(50),
-          value: MatCode.padStart(18, '0'),
-        },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FGPick_MaterialDetailsData] @UserName, @OrderNo, @MatCode`, [
+      { name: 'UserName', type: sql.NVarChar(50), value: UserName },
+      { name: 'OrderNo', type: sql.NVarChar(50), value: OrderNo },
+      {
+        name: 'MatCode',
+        type: sql.NVarChar(50),
+        value: MatCode.padStart(18, '0'),
+      },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error fetching material details data:', error);
@@ -62,13 +54,10 @@ export const getMaterialDetailsData = async (req, res) => {
 export const fgPickOrderNOGetData = async (req, res) => {
   const { OrderNo, UserName } = req.body;
   try {
-    const result = await executeQuery(
-      'EXEC HHT_FGPick_OrderNoGetData @OrderNo, @UserName',
-      [
-        { name: 'OrderNo', type: sql.NVarChar, value: OrderNo },
-        { name: 'UserName', type: sql.NVarChar, value: UserName },
-      ]
-    );
+    const result = await executeQuery('EXEC HHT_FGPick_OrderNoGetData @OrderNo, @UserName', [
+      { name: 'OrderNo', type: sql.NVarChar, value: OrderNo },
+      { name: 'UserName', type: sql.NVarChar, value: UserName },
+    ]);
     res.json(result);
   } catch (error) {
     console.error(error);
@@ -99,31 +88,16 @@ export const validateBarcode = async (req, res) => {
 };
 
 export const validatePalletBarcode = async (req, res) => {
-  const {
-    DeliveryNo,
-    Material,
-    Barcode,
-    PickOrderFlag,
-    UserId,
-    PendingPick,
-    ReqQty,
-    TotalPicked,
-  } = req.body;
+  const { DeliveryNo, Material, Barcode, PickOrderFlag, UserId, PendingPick, ReqQty, TotalPicked } = req.body;
   try {
-    const palletLocationResult = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_PalletLocation] @PalletBarcode`,
-      [{ name: 'PalletBarcode', type: sql.NVarChar, value: Barcode }]
-    );
+    const palletLocationResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_PalletLocation] @PalletBarcode`, [
+      { name: 'PalletBarcode', type: sql.NVarChar, value: Barcode },
+    ]);
     const palletLocationData = palletLocationResult[0];
     if (palletLocationData.Status == 'F') {
-      return res
-        .json({ Status: 'F', Message: palletLocationData.Message })
-        .status(200);
+      return res.json({ Status: 'F', Message: palletLocationData.Message }).status(200);
     }
-    if (
-      palletLocationData.MATERIAL.padStart(18, '0') !==
-      Material.padStart(18, '0')
-    ) {
+    if (palletLocationData.MATERIAL.padStart(18, '0') !== Material.padStart(18, '0')) {
       const deliveryMaterial = Material.replace(/^0+/, '');
       const palletMaterial = palletLocationData.MATERIAL.replace(/^0+/, '');
       return res
@@ -138,9 +112,7 @@ export const validatePalletBarcode = async (req, res) => {
         .status(200);
     }
     if (palletLocationData.Qty > PendingPick) {
-      const boxesToPick = Math.ceil(
-        parseFloat(PendingPick) / parseFloat(palletLocationData.ZPE)
-      );
+      const boxesToPick = Math.ceil(parseFloat(PendingPick) / parseFloat(palletLocationData.ZPE));
       return res
         .json({
           Status: 'F',
@@ -169,30 +141,16 @@ export const validatePalletBarcode = async (req, res) => {
 };
 
 export const validateBoxBarcode = async (req, res) => {
-  const {
-    DeliveryNo,
-    Material,
-    Barcode,
-    PickOrderFlag,
-    UserId,
-    PendingPick,
-    ReqQty,
-    TotalPicked,
-  } = req.body;
+  const { DeliveryNo, Material, Barcode, PickOrderFlag, UserId, PendingPick, ReqQty, TotalPicked } = req.body;
   try {
-    const boxLocationResult = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_BoxLocation] @BoxBarcode`,
-      [{ name: 'BoxBarcode', type: sql.NVarChar, value: Barcode }]
-    );
+    const boxLocationResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_BoxLocation] @BoxBarcode`, [
+      { name: 'BoxBarcode', type: sql.NVarChar, value: Barcode },
+    ]);
     const boxLocationData = boxLocationResult[0];
     if (boxLocationData.Status == 'F') {
-      return res
-        .json({ Status: 'F', Message: boxLocationData.Message })
-        .status(200);
+      return res.json({ Status: 'F', Message: boxLocationData.Message }).status(200);
     }
-    if (
-      boxLocationData.MATERIAL.padStart(18, '0') !== Material.padStart(18, '0')
-    ) {
+    if (boxLocationData.MATERIAL.padStart(18, '0') !== Material.padStart(18, '0')) {
       // Remove leading zeros for display
       const deliveryMaterial = Material.replace(/^0+/, '');
       const boxMaterial = boxLocationData.MATERIAL.replace(/^0+/, '');
@@ -233,32 +191,20 @@ export const validateBoxBarcode = async (req, res) => {
 };
 
 export const updateBarcodeData = async (req, res) => {
-  const {
-    DeliveryNo,
-    Material,
-    Barcode,
-    UserId,
-    ReqQty,
-    TotalPicked,
-    PickedQty,
-  } = req.body;
+  const { DeliveryNo, Material, Barcode, UserId, ReqQty, TotalPicked, PickedQty } = req.body;
 
   try {
     const currentDate = format(new Date(), 'dd.MM.yyyy');
     const barcodeElements = Barcode.split('|');
     const batch = barcodeElements[2];
 
-    const boxLocationResult = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_BoxLocation] @Barcode`,
-      [{ name: 'Barcode', type: sql.NVarChar(255), value: Barcode }]
-    );
+    const boxLocationResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_BoxLocation] @Barcode`, [
+      { name: 'Barcode', type: sql.NVarChar(255), value: Barcode },
+    ]);
 
     const boxLocation = boxLocationResult[0];
     if (boxLocation.Status !== 'T') {
-      console.warn(
-        '[updateBarcodeData] Invalid box location:',
-        boxLocation.Message
-      );
+      console.warn('[updateBarcodeData] Invalid box location:', boxLocation.Message);
       return res.status(200).json(boxLocation);
     }
 
@@ -297,22 +243,16 @@ export const updateBarcodeData = async (req, res) => {
     let errorMessage = '';
 
     try {
-      const response = await axios.post(
-        `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-        sapRequestBody,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 30000,
-        }
-      );
+      const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000,
+      });
 
       const sapResponse = response.data;
 
       materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
       if (!materialDocument) {
-        errorMessage =
-          sapResponse.Return[0]?.MESSAGE ||
-          'Failed to get material document number from SAP';
+        errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
         sapErrorOccurred = true;
 
         // Log error to database
@@ -383,8 +323,7 @@ export const updateBarcodeData = async (req, res) => {
     } catch (axiosError) {
       sapErrorOccurred = true;
       errorMessage =
-        axiosError.response?.data?.Message ||
-        axiosError.response?.data?.ModelState
+        axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
           ? JSON.stringify(axiosError.response.data.ModelState)
           : axiosError.message;
 
@@ -503,24 +442,18 @@ export const fgPickBarcodeReversal = async (req, res) => {
       });
     }
 
-    const procedureName =
-      delimiterCount === 2
-        ? 'HHT_FGPick_PalletReversal'
-        : 'HHT_FGPick_BarcodeReversal';
+    const procedureName = delimiterCount === 2 ? 'HHT_FGPick_PalletReversal' : 'HHT_FGPick_BarcodeReversal';
 
-    const result = await executeQuery(
-      `EXEC [dbo].[${procedureName}] @Barcode, @DeliveryNo, @Material, @UserId`,
-      [
-        { name: 'Barcode', type: sql.NVarChar(50), value: Barcode },
-        { name: 'DeliveryNo', type: sql.NVarChar(50), value: DeliveryNo },
-        {
-          name: 'Material',
-          type: sql.NVarChar(50),
-          value: Material.padStart(18, '0'),
-        },
-        { name: 'UserId', type: sql.NVarChar(50), value: UserId },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[${procedureName}] @Barcode, @DeliveryNo, @Material, @UserId`, [
+      { name: 'Barcode', type: sql.NVarChar(50), value: Barcode },
+      { name: 'DeliveryNo', type: sql.NVarChar(50), value: DeliveryNo },
+      {
+        name: 'Material',
+        type: sql.NVarChar(50),
+        value: Material.padStart(18, '0'),
+      },
+      { name: 'UserId', type: sql.NVarChar(50), value: UserId },
+    ]);
     res.json(result);
   } catch (error) {
     console.error('Error in barcode reversal:', error);
@@ -536,10 +469,9 @@ export const getPalletLocation = async (req, res) => {
       return res.status(400).json({ error: 'PalletBarcode is required' });
     }
 
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_SerialNoLocation] @Barcode`,
-      [{ name: 'Barcode', type: sql.NVarChar, value: PalletBarcode }]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FGPick_SerialNoLocation] @Barcode`, [
+      { name: 'Barcode', type: sql.NVarChar, value: PalletBarcode },
+    ]);
 
     res.json(result[0]);
   } catch (error) {
@@ -571,31 +503,17 @@ export const checkMaterialPickOrder = async (req, res) => {
 };
 
 export const updatePalletBarcode = async (req, res) => {
-  const {
-    DeliveryNo,
-    Material,
-    Barcode,
-    PickOrderFlag,
-    UserId,
-    PendingPick,
-    ReqQty,
-    TotalPicked,
-  } = req.body;
+  const { DeliveryNo, Material, Barcode, PickOrderFlag, UserId, PendingPick, ReqQty, TotalPicked } = req.body;
   try {
-    const palletLocationResult = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_PalletLocation] @PalletBarcode`,
-      [{ name: 'PalletBarcode', type: sql.NVarChar, value: Barcode }]
-    );
+    const palletLocationResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_PalletLocation] @PalletBarcode`, [
+      { name: 'PalletBarcode', type: sql.NVarChar, value: Barcode },
+    ]);
     const palletLocationData = palletLocationResult[0];
     if (palletLocationData.Status == 'F') {
-      return res
-        .json({ Status: 'F', Message: palletLocationData.Message })
-        .status(200);
+      return res.json({ Status: 'F', Message: palletLocationData.Message }).status(200);
     }
     if (palletLocationData.Qty > PendingPick) {
-      const boxesToPick = Math.ceil(
-        parseFloat(PendingPick) / parseFloat(palletLocationData.ZPE)
-      );
+      const boxesToPick = Math.ceil(parseFloat(PendingPick) / parseFloat(palletLocationData.ZPE));
       return res
         .json({
           Status: 'F',
@@ -640,23 +558,17 @@ export const updatePalletBarcode = async (req, res) => {
     let materialDocument = '';
 
     try {
-      const response = await axios.post(
-        `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`,
-        sapRequestBody,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 300_000,
-        }
-      );
+      const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/goods-movement/create`, sapRequestBody, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 300_000,
+      });
 
       const sapResponse = response.data;
       materialDocument = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
 
       if (!materialDocument) {
         sapError = true;
-        errorMessage =
-          sapResponse.Return[0]?.MESSAGE ||
-          'Failed to get material document number from SAP';
+        errorMessage = sapResponse.Return[0]?.MESSAGE || 'Failed to get material document number from SAP';
 
         // Log the error in the database
         await executeQuery(
@@ -872,33 +784,25 @@ export const closeDeliveryOrderManually = async (req, res) => {
     const { OrderNo, Material } = req.body;
 
     if (!OrderNo || !Material) {
-      return res
-        .status(400)
-        .json({ error: 'OrderNo and Material are required' });
+      return res.status(400).json({ error: 'OrderNo and Material are required' });
     }
 
     // First, get the picked details from the database
-    const pickedDetailsResult = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_PickedDetails] @OrderNo, @Material`,
-      [
-        {
-          name: 'OrderNo',
-          type: sql.NVarChar(50),
-          value: OrderNo.padStart(12, '0'),
-        },
-        {
-          name: 'Material',
-          type: sql.NVarChar(50),
-          value: Material.padStart(18, '0'),
-        },
-      ]
-    );
+    const pickedDetailsResult = await executeQuery(`EXEC [dbo].[HHT_FGPick_PickedDetails] @OrderNo, @Material`, [
+      {
+        name: 'OrderNo',
+        type: sql.NVarChar(50),
+        value: OrderNo.padStart(12, '0'),
+      },
+      {
+        name: 'Material',
+        type: sql.NVarChar(50),
+        value: Material.padStart(18, '0'),
+      },
+    ]);
 
     // Check if we got valid picked details
-    if (
-      pickedDetailsResult.length === 0 ||
-      pickedDetailsResult[0].Status === 'F'
-    ) {
+    if (pickedDetailsResult.length === 0 || pickedDetailsResult[0].Status === 'F') {
       return res.json({
         Status: 'F',
         Message: pickedDetailsResult[0]?.Message || 'No picked details found',
@@ -925,14 +829,10 @@ export const closeDeliveryOrderManually = async (req, res) => {
     let errorMessage = '';
 
     try {
-      const response = await axios.post(
-        `${SAP_CONNECTOR_MIDDLEWARE_URL}/api/delivery-order/close`,
-        sapRequestBody,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 30000,
-        }
-      );
+      const response = await axios.post(`${SAP_CONNECTOR_MIDDLEWARE_URL}/api/delivery-order/close`, sapRequestBody, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000,
+      });
 
       const sapResponse = response.data;
 
@@ -947,9 +847,7 @@ export const closeDeliveryOrderManually = async (req, res) => {
     } catch (axiosError) {
       sapError = true;
       errorMessage =
-        axiosError.response?.data?.Return?.[0]?.MESSAGE ||
-        axiosError.response?.data?.Message ||
-        axiosError.message;
+        axiosError.response?.data?.Return?.[0]?.MESSAGE || axiosError.response?.data?.Message || axiosError.message;
     }
 
     // If SAP call failed, return the error
@@ -961,21 +859,18 @@ export const closeDeliveryOrderManually = async (req, res) => {
     }
 
     // If SAP call was successful, proceed with the manual closing stored procedure
-    const result = await executeQuery(
-      `EXEC [dbo].[HHT_FGPick_ManualClosing] @OrderNo, @Material`,
-      [
-        {
-          name: 'OrderNo',
-          type: sql.NVarChar(50),
-          value: OrderNo.padStart(12, '0'),
-        },
-        {
-          name: 'Material',
-          type: sql.NVarChar(50),
-          value: Material.padStart(18, '0'),
-        },
-      ]
-    );
+    const result = await executeQuery(`EXEC [dbo].[HHT_FGPick_ManualClosing] @OrderNo, @Material`, [
+      {
+        name: 'OrderNo',
+        type: sql.NVarChar(50),
+        value: OrderNo.padStart(12, '0'),
+      },
+      {
+        name: 'Material',
+        type: sql.NVarChar(50),
+        value: Material.padStart(18, '0'),
+      },
+    ]);
 
     res.json({
       ...result[0],

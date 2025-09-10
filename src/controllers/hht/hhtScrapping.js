@@ -1,9 +1,6 @@
 import { executeQuery, sql } from '../../config/db.js';
 import { sendScrappingApprovalEmail } from '../../utils/scrappingTemplate.js';
-import {
-  SAP_SERVER,
-  SAP_CONNECTOR_MIDDLEWARE_URL,
-} from '../../utils/constants.js';
+import { SAP_SERVER, SAP_CONNECTOR_MIDDLEWARE_URL } from '../../utils/constants.js';
 import { format } from 'date-fns';
 import axios from 'axios';
 
@@ -12,10 +9,9 @@ export const validateSerialBarcodeWHBlockScrapping = async (req, res) => {
 
   try {
     let result;
-    result = await executeQuery(
-      `EXEC [dbo].[HHT_WHBlockScrapping_PalletValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode }]
-    );
+    result = await executeQuery(`EXEC [dbo].[HHT_WHBlockScrapping_PalletValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode },
+    ]);
 
     res.json(result);
   } catch (error) {
@@ -30,10 +26,9 @@ export const validateSerialBarcodeWHReleaseScrapping = async (req, res) => {
   try {
     let result;
 
-    result = await executeQuery(
-      `EXEC [dbo].[HHT_WHUnrestrictedScrapping_PalletValidation] @ScanBarcode`,
-      [{ name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode }]
-    );
+    result = await executeQuery(`EXEC [dbo].[HHT_WHUnrestrictedScrapping_PalletValidation] @ScanBarcode`, [
+      { name: 'ScanBarcode', type: sql.NVarChar, value: ScanBarcode },
+    ]);
 
     console.log(result);
     res.json(result);
@@ -44,14 +39,7 @@ export const validateSerialBarcodeWHReleaseScrapping = async (req, res) => {
 };
 
 export const updateWHBlockReleaseScrappingStatus = async (req, res) => {
-  const {
-    V_ScanBarcodes,
-    NewQCStatus,
-    StorageLocation,
-    UserId,
-    Reason,
-    isExisting,
-  } = req.body;
+  const { V_ScanBarcodes, NewQCStatus, StorageLocation, UserId, Reason, isExisting } = req.body;
 
   try {
     if (!V_ScanBarcodes) {
@@ -62,10 +50,7 @@ export const updateWHBlockReleaseScrappingStatus = async (req, res) => {
     }
 
     // Generate scrapping serial number once
-    const scrappingSrNoResult = await executeQuery(
-      `EXEC [dbo].[HHT_ScrapppingSrNo_Generate]`,
-      []
-    );
+    const scrappingSrNoResult = await executeQuery(`EXEC [dbo].[HHT_ScrapppingSrNo_Generate]`, []);
 
     if (!scrappingSrNoResult || scrappingSrNoResult.length === 0) {
       return res.json({
@@ -79,9 +64,7 @@ export const updateWHBlockReleaseScrappingStatus = async (req, res) => {
     let allPalletBarcodes = new Set();
     let palletQuantities = new Map();
 
-    const palletGroups = V_ScanBarcodes.split('*').filter(group =>
-      group.trim()
-    );
+    const palletGroups = V_ScanBarcodes.split('*').filter(group => group.trim());
     const isExistingValues = isExisting ? isExisting.split('$') : [];
 
     for (let i = 0; i < palletGroups.length; i++) {
@@ -159,10 +142,7 @@ export const updateWHBlockReleaseScrappingStatus = async (req, res) => {
       Status: 'T',
       Message: `${NewQCStatus} status update completed successfully. Scrapping processed in database.`,
       ProcessedCount: updatedCount,
-      TotalQuantity: Array.from(palletQuantities.values()).reduce(
-        (a, b) => a + b,
-        0
-      ),
+      TotalQuantity: Array.from(palletQuantities.values()).reduce((a, b) => a + b, 0),
       ScrappingSrNo: scrappingSrNo,
     });
   } catch (error) {
@@ -240,12 +220,8 @@ export const approveScrapping = async (req, res) => {
     };
 
     pendingScrappingResult.forEach(item => {
-      const formattedMaterialNo = item.MATERIAL
-        ? item.MATERIAL.padStart(18, '0')
-        : '';
-      const formattedOrderNo = item.ORDER_NUMBER
-        ? item.ORDER_NUMBER.padStart(12, '0')
-        : '';
+      const formattedMaterialNo = item.MATERIAL ? item.MATERIAL.padStart(18, '0') : '';
+      const formattedOrderNo = item.ORDER_NUMBER ? item.ORDER_NUMBER.padStart(12, '0') : '';
 
       const sapItem = {
         MATERIAL: formattedMaterialNo,
@@ -399,9 +375,7 @@ export const approveScrapping = async (req, res) => {
                 ]
               );
             }
-            errorMessages.push(
-              `Unrestricted items error: ${returnMessage.MESSAGE}`
-            );
+            errorMessages.push(`Unrestricted items error: ${returnMessage.MESSAGE}`);
           } else {
             const materialDoc = sapResponse.GoodsMovementHeadRet?.MAT_DOC;
             if (materialDoc) {
@@ -419,8 +393,7 @@ export const approveScrapping = async (req, res) => {
       } catch (axiosError) {
         console.error('SAP API Error for Unrestricted items:', axiosError);
         const errorMessage =
-          axiosError.response?.data?.Message ||
-          axiosError.response?.data?.ModelState
+          axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
             ? JSON.stringify(axiosError.response.data.ModelState)
             : axiosError.message;
 
@@ -645,8 +618,7 @@ export const approveScrapping = async (req, res) => {
       } catch (axiosError) {
         console.error('SAP API Error for Block items:', axiosError);
         const errorMessage =
-          axiosError.response?.data?.Message ||
-          axiosError.response?.data?.ModelState
+          axiosError.response?.data?.Message || axiosError.response?.data?.ModelState
             ? JSON.stringify(axiosError.response.data.ModelState)
             : axiosError.message;
 
@@ -733,13 +705,10 @@ export const approveScrapping = async (req, res) => {
     }
 
     // Update approval status in database
-    const approvalResult = await executeQuery(
-      `EXEC [dbo].[Sp_Scrapping_ApprovalUpdate] @ScrappingSrNo, @ApprovedBy`,
-      [
-        { name: 'ScrappingSrNo', type: sql.Int, value: ScrappingSrNo },
-        { name: 'ApprovedBy', type: sql.NVarChar(50), value: ApprovedBy },
-      ]
-    );
+    const approvalResult = await executeQuery(`EXEC [dbo].[Sp_Scrapping_ApprovalUpdate] @ScrappingSrNo, @ApprovedBy`, [
+      { name: 'ScrappingSrNo', type: sql.Int, value: ScrappingSrNo },
+      { name: 'ApprovedBy', type: sql.NVarChar(50), value: ApprovedBy },
+    ]);
 
     // Prepare response message
     const responseMessage =

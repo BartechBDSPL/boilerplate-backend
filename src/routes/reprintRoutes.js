@@ -7,32 +7,15 @@ import auth from '../middleware/auth.js';
 const router = express.Router();
 
 // Reprint for  Label Printing
-router.post(
-  '/fg-label-data',
-  auth,
-  reprintFGLabelController.getFGLabelPrintData
-);
-router.post(
-  '/insert-fg-label',
-  auth,
-  reprintFGLabelController.insertFGLabelPrintingData
-);
+router.post('/fg-label-data', auth, reprintFGLabelController.getFGLabelPrintData);
+router.post('/insert-fg-label', auth, reprintFGLabelController.insertFGLabelPrintingData);
 
 // Reprint for  Pallet Label Printing
-router.post(
-  '/insert-pallet-label',
-  reprintPalletLabelController.insertPalletRePrintDetails
-);
-router.post(
-  '/get-pallet-data',
-  reprintPalletLabelController.getRePrintPalletData
-);
+router.post('/insert-pallet-label', reprintPalletLabelController.insertPalletRePrintDetails);
+router.post('/get-pallet-data', reprintPalletLabelController.getRePrintPalletData);
 
 // Reprint for Stock Transfer Note
-router.post(
-  '/get-stock-transfer-note-data',
-  reprintStockTransferNoteController.getReprintStockTransferNoteDetails
-);
+router.post('/get-stock-transfer-note-data', reprintStockTransferNoteController.getReprintStockTransferNoteDetails);
 router.post(
   '/insert-stock-transfer-note-reprint',
   reprintStockTransferNoteController.insertReprintStockTransferNoteDetails

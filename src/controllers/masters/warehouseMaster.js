@@ -13,9 +13,7 @@ export const getAllPlantCode = async (req, res) => {
 
 export const getCategoryCode = async (req, res) => {
   try {
-    const result = await executeQuery(
-      'EXEC Sp_warehouse_category_master_get_category_code'
-    );
+    const result = await executeQuery('EXEC Sp_warehouse_category_master_get_category_code');
     res.json(result);
   } catch (error) {
     console.error(error);
@@ -25,9 +23,7 @@ export const getCategoryCode = async (req, res) => {
 
 export const getAllDetails = async (req, res) => {
   try {
-    const result = await executeQuery(
-      'EXEC sp_warehouse_master_get_all_details'
-    );
+    const result = await executeQuery('EXEC sp_warehouse_master_get_all_details');
     res.json(result);
   } catch (error) {
     console.error(error);
@@ -36,16 +32,7 @@ export const getAllDetails = async (req, res) => {
 };
 
 export const updateDetails = async (req, res) => {
-  const {
-    ID,
-    PlantCode,
-    WarehouseCode,
-    WarehouseDesc,
-    WarehouseAddress,
-    WarehouseCategory,
-    WStatus,
-    User,
-  } = req.body;
+  const { ID, PlantCode, WarehouseCode, WarehouseDesc, WarehouseAddress, WarehouseCategory, WStatus, User } = req.body;
   try {
     const result = await executeQuery(
       'EXEC sp_warehouse_master_update @id, @warehouse_code, @warehouse_desc, @warehouse_address, @warehouse_category, @warehouse_status, @updated_by',
@@ -76,15 +63,7 @@ export const updateDetails = async (req, res) => {
 
 // Insert new data
 export const insertDetails = async (req, res) => {
-  const {
-    PlantCode,
-    WarehouseCode,
-    WarehouseDesc,
-    WarehouseAddress,
-    WarehouseCategory,
-    WStatus,
-    User,
-  } = req.body;
+  const { PlantCode, WarehouseCode, WarehouseDesc, WarehouseAddress, WarehouseCategory, WStatus, User } = req.body;
   try {
     const result = await executeQuery(
       'EXEC sp_warehouse_master_insert @plant_code,@warehouse_code, @warehouse_desc, @warehouse_address, @warehouse_category, @warehouse_status, @created_by',

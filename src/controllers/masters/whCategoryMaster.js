@@ -21,9 +21,7 @@ export const insertWhCategory = async (req, res) => {
 
 export const getAllWarehouseCategory = async (req, res) => {
   try {
-    const getAllWHCategory = await executeQuery(
-      'EXEC sp_warehouse_category_master_get_all_details'
-    );
+    const getAllWHCategory = await executeQuery('EXEC sp_warehouse_category_master_get_all_details');
     res.json(getAllWHCategory);
   } catch (error) {
     console.error(error);

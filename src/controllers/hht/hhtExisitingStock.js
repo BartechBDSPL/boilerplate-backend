@@ -13,20 +13,12 @@ export const validateBarcode = async (req, res) => {
     }
 
     try {
-      if (
-        typeof ScanBarcode === 'string' &&
-        /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)
-      ) {
-        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString(
-          'utf8'
-        );
+      if (typeof ScanBarcode === 'string' && /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)) {
+        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString('utf8');
         ScanBarcode = decodedBarcode;
       }
     } catch (decodeError) {
-      console.warn(
-        'Base64 decoding failed, using original input:',
-        decodeError
-      );
+      console.warn('Base64 decoding failed, using original input:', decodeError);
     }
 
     if (typeof ScanBarcode !== 'string') {
@@ -55,23 +47,17 @@ export const validateBarcode = async (req, res) => {
 
     const ORDER_NUMBER = '100' + BATCH.replace(/0$/, '');
 
-    const result = await executeQueryExisiting(
-      `EXEC [dbo].[HHT_ESU_BarcodeValidation] @ScanBarcode`,
-      [
-        {
-          name: 'ScanBarcode',
-          type: sql.NVarChar(255),
-          value: ScanBarcode.trim(),
-        },
-      ]
-    );
+    const result = await executeQueryExisiting(`EXEC [dbo].[HHT_ESU_BarcodeValidation] @ScanBarcode`, [
+      {
+        name: 'ScanBarcode',
+        type: sql.NVarChar(255),
+        value: ScanBarcode.trim(),
+      },
+    ]);
 
     let responseData;
 
-    if (
-      result[0].Status === 'F' &&
-      result[0].Message !== 'Pallet Got Dispatched.'
-    ) {
+    if (result[0].Status === 'F' && result[0].Message !== 'Pallet Got Dispatched.') {
       const avalQty = parseInt(PALLET_QTY);
       responseData = {
         Status: 'T',
@@ -85,9 +71,7 @@ export const validateBarcode = async (req, res) => {
         Location: LOCATION || '',
         PCS_PER_BOX: PCS_PER_BOX,
         BOX_PER_PALLET:
-          parseInt(PCS_PER_BOX) > 0
-            ? parseFloat((avalQty / parseInt(PCS_PER_BOX)).toFixed(1))
-            : BOX_PER_PALLET,
+          parseInt(PCS_PER_BOX) > 0 ? parseFloat((avalQty / parseInt(PCS_PER_BOX)).toFixed(1)) : BOX_PER_PALLET,
         PALLET_NUMBER: PALLET_NUMBER,
         PALLET_QTY: PALLET_QTY,
       };
@@ -106,9 +90,7 @@ export const validateBarcode = async (req, res) => {
         Location: LOCATION || '',
         PCS_PER_BOX: PCS_PER_BOX,
         BOX_PER_PALLET:
-          parseInt(PCS_PER_BOX) > 0
-            ? parseFloat((avalQty / parseInt(PCS_PER_BOX)).toFixed(1))
-            : BOX_PER_PALLET,
+          parseInt(PCS_PER_BOX) > 0 ? parseFloat((avalQty / parseInt(PCS_PER_BOX)).toFixed(1)) : BOX_PER_PALLET,
         PALLET_NUMBER: PALLET_NUMBER,
         PALLET_QTY: PALLET_QTY,
       };
@@ -118,14 +100,10 @@ export const validateBarcode = async (req, res) => {
       const avalQty = result[0].AvalQty || 0;
       responseData = {
         ...result[0],
-        MATERIAL: result[0].MATERIAL
-          ? result[0].MATERIAL.replace(/^0+/, '')
-          : '',
+        MATERIAL: result[0].MATERIAL ? result[0].MATERIAL.replace(/^0+/, '') : '',
         PCS_PER_BOX: PCS_PER_BOX,
         BOX_PER_PALLET:
-          parseInt(PCS_PER_BOX) > 0
-            ? parseFloat((avalQty / parseInt(PCS_PER_BOX)).toFixed(1))
-            : BOX_PER_PALLET,
+          parseInt(PCS_PER_BOX) > 0 ? parseFloat((avalQty / parseInt(PCS_PER_BOX)).toFixed(1)) : BOX_PER_PALLET,
         PALLET_NUMBER: PALLET_NUMBER,
         PALLET_QTY: PALLET_QTY,
       };
@@ -142,45 +120,19 @@ export const validateBarcode = async (req, res) => {
 };
 
 export const updateStockInfo = async (req, res) => {
-  let {
-    ScanBarcode,
-    ORDER_NUMBER,
-    MATERIAL,
-    MATERIAL_TEXT,
-    BATCH,
-    Qty,
-    STORAGE_LOCATION,
-    Location,
-    User,
-  } = req.body;
+  let { ScanBarcode, ORDER_NUMBER, MATERIAL, MATERIAL_TEXT, BATCH, Qty, STORAGE_LOCATION, Location, User } = req.body;
 
   try {
     try {
-      if (
-        typeof ScanBarcode === 'string' &&
-        /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)
-      ) {
-        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString(
-          'utf8'
-        );
+      if (typeof ScanBarcode === 'string' && /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)) {
+        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString('utf8');
         ScanBarcode = decodedBarcode;
       }
     } catch (decodeError) {
-      console.warn(
-        'Base64 decoding failed, using original input:',
-        decodeError
-      );
+      console.warn('Base64 decoding failed, using original input:', decodeError);
     }
 
-    if (
-      !ScanBarcode ||
-      !ORDER_NUMBER ||
-      !MATERIAL ||
-      !MATERIAL_TEXT ||
-      !BATCH ||
-      !Qty ||
-      !User
-    ) {
+    if (!ScanBarcode || !ORDER_NUMBER || !MATERIAL || !MATERIAL_TEXT || !BATCH || !Qty || !User) {
       return res.status(400).json({
         Status: 'F',
         Message: 'Missing required fields',
@@ -276,20 +228,12 @@ export const validateDispatchBarcode = async (req, res) => {
     }
 
     try {
-      if (
-        typeof ScanBarcode === 'string' &&
-        /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)
-      ) {
-        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString(
-          'utf8'
-        );
+      if (typeof ScanBarcode === 'string' && /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)) {
+        const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString('utf8');
         ScanBarcode = decodedBarcode;
       }
     } catch (decodeError) {
-      console.warn(
-        'Base64 decoding failed, using original input:',
-        decodeError
-      );
+      console.warn('Base64 decoding failed, using original input:', decodeError);
     }
 
     if (typeof ScanBarcode !== 'string') {
@@ -348,13 +292,8 @@ export const updateDispatchInfo = async (req, res) => {
   }
 
   try {
-    if (
-      typeof ScanBarcode === 'string' &&
-      /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)
-    ) {
-      const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString(
-        'utf8'
-      );
+    if (typeof ScanBarcode === 'string' && /^[A-Za-z0-9+/=]+$/.test(ScanBarcode)) {
+      const decodedBarcode = Buffer.from(ScanBarcode, 'base64').toString('utf8');
       ScanBarcode = decodedBarcode;
     }
   } catch (decodeError) {
@@ -392,8 +331,7 @@ export const updateDispatchInfo = async (req, res) => {
         {
           name: 'BoxNo',
           type: sql.NVarChar(10),
-          value:
-            parseFloat((PickQty / PCS_PER_BOX).toFixed(2)).toString() || '0',
+          value: parseFloat((PickQty / PCS_PER_BOX).toFixed(2)).toString() || '0',
         },
         { name: 'User', type: sql.NVarChar(50), value: User },
       ]

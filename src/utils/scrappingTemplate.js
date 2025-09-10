@@ -351,10 +351,7 @@ export const sendScrappingApprovalEmail = async (scrappingSrNo, date) => {
         console.error('Scrapping approval email sending failed:', error);
         reject({ success: false, error: error.message });
       } else {
-        console.log(
-          'Scrapping approval email sent successfully:',
-          info.messageId
-        );
+        console.log('Scrapping approval email sent successfully:', info.messageId);
         resolve({ success: true, messageId: info.messageId });
       }
     });
