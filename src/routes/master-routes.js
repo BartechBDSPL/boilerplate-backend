@@ -50,6 +50,11 @@ router.post('/insert-wh-location', authWithSession, WhLocationMaster.insertDetai
 router.patch('/update-wh-location', authWithSession, WhLocationMaster.updateDetails);
 router.post('/upload-wh-location-excel', authWithSession, WhLocationMaster.uploadWhLocationExcel);
 
+//Material Master
+router.get('/get-all-material-details', auth, MaterialMaster.getAllMaterialDetails);
+router.post('/insert-material-details', auth, MaterialMaster.insertMaterialDetails);
+router.patch('/update-material-details', auth, MaterialMaster.updateMaterialDetails);
+router.get('/get-all-plant-code', auth, MaterialMaster.getAllPlantCodes);
 
 
 // Existing Stock Upload
