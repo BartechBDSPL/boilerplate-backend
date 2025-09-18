@@ -181,12 +181,7 @@ class SessionManager {
 
 const sessionManager = new SessionManager();
 
-setTimeout(async () => {
-  try {
-    await sessionManager.getSessionTimeout();
-  } catch (error) {
-    console.log('Initial session timeout fetch will retry on first use');
-  }
-}, 2000); // 2 second delay
+// Don't initialize immediately - wait for database to be ready
+// The session timeout will be fetched on first use or manually triggered
 
 export default sessionManager;

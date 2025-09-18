@@ -25,10 +25,7 @@ export const handleLogout = async (req, res) => {
       sessionManager.removeUserSession(userId);
     }
 
-    res.json({
-      Status: 'S',
-      Message: 'Logged out successfully',
-    });
+    res.json({ Status: 'T', Message: 'Logged out successfully' });
   } catch (error) {
     console.error('❌ Logout error:', error);
     res.status(500).json({

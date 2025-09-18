@@ -41,11 +41,11 @@ router.get('/get-all-session-master', authWithSession, SessionMaster.getAllDetai
 router.patch('/update-session-master', authWithSession, SessionMaster.updateDetails);
 
 //Session Management
-router.post('/logout', authWithSession, SessionController.handleLogout);
-router.get('/session-status', authWithSession, SessionController.getSessionStatus);
-router.get('/active-sessions', authWithSession, SessionController.getActiveSessions);
-router.post('/cleanup-sessions', authWithSession, SessionController.cleanupSessions);
-router.get('/session-config', authWithSession, SessionController.getSessionConfig);
-router.post('/refresh-session-config', authWithSession, SessionController.refreshSessionConfig);
+router.post('/logout', SessionController.handleLogout);
+router.get('/session-status', SessionController.getSessionStatus);
+router.get('/active-sessions', SessionController.getActiveSessions);
+router.post('/cleanup-sessions', SessionController.cleanupSessions);
+router.get('/session-config', SessionController.getSessionConfig);
+router.post('/refresh-session-config', SessionController.refreshSessionConfig);
 
 export default router;

@@ -7,7 +7,7 @@ import fs from 'fs';
 
 export const getAllDetails = async (req, res) => {
   try {
-    const result = await executeQuery(`EXEC Sp_WHLocation_GetAllDetails`);
+    const result = await executeQuery(`EXEC sp_warehouse_location_master_get_all_details`);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json(error.message);
@@ -16,7 +16,7 @@ export const getAllDetails = async (req, res) => {
 
 export const getAllWhCode = async (req, res) => {
   try {
-    const result = await executeQuery(`EXEC Sp_WH_GetWarehouseCode`);
+    const result = await executeQuery(`EXEC sp_warehouse_master_get_warehouse_code`);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json(error.message);
@@ -28,17 +28,17 @@ export const insertDetails = async (req, res) => {
 
   try {
     const result = await executeQuery(
-      'EXEC Sp_WHLocation_InsertDetails @WarehouseCode, @Bin, @User, @LocationNameSap, @WStatus',
+      'EXEC sp_warehouse_location_insert @warehouse_code, @bin, @created_by, @location_name_erp, @location_status',
       [
-        { name: 'WarehouseCode', type: sql.NVarChar, value: WarehouseCode },
-        { name: 'Bin', type: sql.NVarChar, value: Bin },
-        { name: 'User', type: sql.NVarChar, value: User },
-        { name: 'LocationNameSap', type: sql.NVarChar, value: LocationNameSap },
-        { name: 'WStatus', type: sql.NVarChar, value: WStatus },
+        { name: 'warehouse_code', type: sql.NVarChar, value: WarehouseCode },
+        { name: 'bin', type: sql.NVarChar, value: Bin },
+        { name: 'created_by', type: sql.NVarChar, value: User },
+        { name: 'location_name_erp', type: sql.NVarChar, value: LocationNameSap },
+        { name: 'location_status', type: sql.NVarChar, value: WStatus },
       ]
     );
 
-    res.status(200).json(result);
+    res.status(200).json(result[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
@@ -49,18 +49,18 @@ export const updateDetails = async (req, res) => {
   const { Id, WarehouseCode, Bin, LocationNameSap, User, Status } = req.body;
   try {
     const result = await executeQuery(
-      'EXEC Sp_WHLocation_UpdatedDetails @Id, @WarehouseCode, @Bin, @LocationNameSap, @WStatus, @User',
+      'EXEC sp_warehouse_location_update @id, @warehouse_code, @bin, @location_name_erp, @location_status, @updated_by',
       [
-        { name: 'Id', type: sql.Int, value: Id },
-        { name: 'WarehouseCode', type: sql.NVarChar, value: WarehouseCode },
-        { name: 'Bin', type: sql.NVarChar, value: Bin },
-        { name: 'LocationNameSap', type: sql.NVarChar, value: LocationNameSap },
-        { name: 'WStatus', type: sql.NVarChar, value: Status },
-        { name: 'User', type: sql.NVarChar, value: User },
+        { name: 'id', type: sql.Int, value: Id },
+        { name: 'warehouse_code', type: sql.NVarChar, value: WarehouseCode },
+        { name: 'bin', type: sql.NVarChar, value: Bin },
+        { name: 'location_name_erp', type: sql.NVarChar, value: LocationNameSap },
+        { name: 'location_status', type: sql.NVarChar, value: Status },
+        { name: 'updated_by', type: sql.NVarChar, value: User },
       ]
     );
 
-    res.status(200).json(result);
+    res.status(200).json(result[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
@@ -187,21 +187,21 @@ export const uploadWhLocationExcel = async (req, res) => {
               const status = row['Bin Status (SAP)'];
 
               const result = await executeQuery(
-                'EXEC Sp_WHLocation_UpsertDetails @WarehouseCode, @Bin, @User, @LocationNameSAP, @WStatus',
+                'EXEC sp_warehouse_location_master_upsert_details @warehouse_code, @bin, @updated_by, @location_name_erp, @location_status',
                 [
                   {
-                    name: 'WarehouseCode',
+                    name: 'warehouse_code',
                     type: sql.NVarChar,
                     value: warehouseCode,
                   },
-                  { name: 'Bin', type: sql.NVarChar, value: bin },
-                  { name: 'User', type: sql.NVarChar, value: username },
+                  { name: 'bin', type: sql.NVarChar, value: bin },
+                  { name: 'updated_by', type: sql.NVarChar, value: username },
                   {
-                    name: 'LocationNameSAP',
+                    name: 'location_name_erp',
                     type: sql.NVarChar,
                     value: locationNameSAP,
                   },
-                  { name: 'WStatus', type: sql.NVarChar, value: status },
+                  { name: 'location_status', type: sql.NVarChar, value: status },
                 ]
               );
 

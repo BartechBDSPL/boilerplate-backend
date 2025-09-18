@@ -1,7 +1,6 @@
 import { executeQuery } from '../../config/db.js';
 import { sql } from '../../config/db.js';
 
-// Get all company details - which we see inside the table of Company Master
 export const getAllCompanyDetails = async (req, res) => {
   try {
     const getAllDetails = await executeQuery('EXEC sp_company_master_get_all_details');
@@ -12,7 +11,6 @@ export const getAllCompanyDetails = async (req, res) => {
   }
 };
 
-// update details of user
 export const updateCompanyDetails = async (req, res) => {
   const { companyId, companyName, address, city, state, companyStatus, updatedBy } = req.body;
   console.log(req.body);

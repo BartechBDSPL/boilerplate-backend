@@ -58,6 +58,15 @@ app.use('/', (req, res) => {
 async function startServer() {
   try {
     await initializeDatabases();
+    
+    // Initialize session manager after database is ready
+    console.log('🔧 Initializing session manager...');
+    try {
+      await sessionManager.getSessionTimeout();
+      console.log('✅ Session manager initialized successfully');
+    } catch (error) {
+      console.log('⚠️ Session manager will initialize on first use');
+    }
 
     if (process.env.NODE_ENV !== 'test') {
       app.listen(port, () => {
