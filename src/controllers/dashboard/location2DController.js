@@ -7,7 +7,6 @@ export const getLocationWiseItemQty = async (req, res) => {
     if (Array.isArray(result) && result.length > 0) {
       res.json(result);
     } else {
-      // Handle case where no data is found
       res.json({
         Status: 'F',
         Message: 'No data found for locations and item quantities.',

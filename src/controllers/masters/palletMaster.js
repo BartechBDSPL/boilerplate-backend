@@ -56,14 +56,12 @@ export const checkPalletBarcode = async (req, res) => {
   const { PalletBarcode } = req.body;
 
   try {
-    // Execute the stored procedure with parameters
     const result = await executeQuery('EXEC [dbo].[Sp_CheckPalletBarcode] @PalletBarcode', [
       { name: 'PalletBarcode', type: sql.NVarChar(100), value: PalletBarcode },
     ]);
 
-    // Check if result contains data and send it back to the client
     if (result.length > 0) {
-      res.json(result[0]); // Return the first object from the result
+      res.json(result[0]);
     } else {
       res.json({ message: 'No data returned from the stored procedure.' });
     }

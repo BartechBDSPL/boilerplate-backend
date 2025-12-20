@@ -1,10 +1,9 @@
 import sessionManager from '../../utils/sessionManager.js';
 
-// Initialize user session after successful login
 export const initializeUserSession = async (req, res, next) => {
   try {
-    // This should be called after successful authentication
     const userId = req.user?.user?.user_id;
+
     if (userId) {
       await sessionManager.updateUserActivity(userId);
       console.log(`✅ Session initialized for user: ${userId}`);
@@ -12,11 +11,10 @@ export const initializeUserSession = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('❌ Error initializing session:', error);
-    next(); // Continue even if session init fails
+    next();
   }
 };
 
-// Handle user logout
 export const handleLogout = async (req, res) => {
   try {
     const userId = req.user?.user?.user_id;
@@ -35,7 +33,6 @@ export const handleLogout = async (req, res) => {
   }
 };
 
-// Get session status
 export const getSessionStatus = async (req, res) => {
   try {
     const userId = req.user?.user?.user_id;
@@ -65,7 +62,6 @@ export const getSessionStatus = async (req, res) => {
   }
 };
 
-// Admin endpoint to view all active sessions
 export const getActiveSessions = async (req, res) => {
   try {
     const sessions = sessionManager.getActiveSessions();
@@ -83,7 +79,6 @@ export const getActiveSessions = async (req, res) => {
   }
 };
 
-// Cleanup expired sessions manually
 export const cleanupSessions = async (req, res) => {
   try {
     const cleanedCount = sessionManager.cleanupExpiredSessions();
@@ -101,7 +96,6 @@ export const cleanupSessions = async (req, res) => {
   }
 };
 
-// Get current session configuration
 export const getSessionConfig = async (req, res) => {
   try {
     const config = sessionManager.getSessionConfig();
@@ -119,7 +113,6 @@ export const getSessionConfig = async (req, res) => {
   }
 };
 
-// Manually refresh session configuration from database
 export const refreshSessionConfig = async (req, res) => {
   try {
     await sessionManager.getSessionTimeout();

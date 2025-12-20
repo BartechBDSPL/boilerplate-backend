@@ -5,7 +5,6 @@ export function isPrinterReachable(ip, port) {
     const socket = new net.Socket();
     socket.setTimeout(3000);
 
-    // Convert port to number and use default 9100 if invalid
     const printerPort = parseInt(port) || 9100;
 
     socket.on('connect', () => {

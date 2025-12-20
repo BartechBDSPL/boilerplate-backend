@@ -12,24 +12,37 @@ export const getAllUserDetails = async (req, res) => {
 };
 
 export const updateUserDetails = async (req, res) => {
-  const { User_ID, User_Name, User_Role, Status, Locked, UpdatedBy, PassExpDays, PlantCode, Line, EmailId, MobileNo } =
-    req.body;
+  // Accept snake_case for this endpoint
+  const {
+    id,
+    user_name,
+    user_role,
+    user_status,
+    locked,
+    updated_by,
+    pass_exp_days,
+    plant_code,
+    line_no,
+    email_id,
+    mobile_no,
+    warehouse_code,
+  } = req.body;
 
   try {
     const result = await executeQuery(
-      'EXEC [dbo].[sp_user_update] @id, @user_role, @user_status, @locked, @updated_by, @user_name, @plant_code, @line, @email_id, @mobile_no, @pass_exp_days',
+      'EXEC [dbo].[sp_user_update] @id, @user_role, @user_status, @locked, @updated_by, @user_name, @plant_code, @line_no, @email_id, @mobile_no, @pass_exp_days',
       {
-        id: { type: sql.Int, value: parseInt(User_ID) },
-        user_role: { type: sql.NVarChar(150), value: User_Role },
-        user_status: { type: sql.NVarChar(150), value: Status },
-        locked: { type: sql.NVarChar(150), value: Locked },
-        updated_by: { type: sql.NVarChar(150), value: UpdatedBy },
-        user_name: { type: sql.NVarChar(150), value: User_Name },
-        plant_code: { type: sql.NVarChar(150), value: PlantCode },
-        line: { type: sql.NVarChar(150), value: Line },
-        email_id: { type: sql.NVarChar(150), value: EmailId },
-        mobile_no: { type: sql.BigInt, value: parseInt(MobileNo) },
-        pass_exp_days: { type: sql.Int, value: parseInt(PassExpDays) },
+        id: { type: sql.Int, value: parseInt(id) },
+        user_role: { type: sql.NVarChar(150), value: user_role },
+        user_status: { type: sql.NVarChar(150), value: user_status },
+        locked: { type: sql.NVarChar(150), value: locked },
+        updated_by: { type: sql.NVarChar(150), value: updated_by },
+        user_name: { type: sql.NVarChar(150), value: user_name },
+        plant_code: { type: sql.NVarChar(150), value: plant_code },
+        line_no: { type: sql.NVarChar(10), value: line_no },
+        email_id: { type: sql.NVarChar(150), value: email_id },
+        mobile_no: { type: sql.BigInt, value: mobile_no ? parseInt(mobile_no) : null },
+        pass_exp_days: { type: sql.Int, value: pass_exp_days ? parseInt(pass_exp_days) : null },
       }
     );
     res.status(200).json(result[0]);
@@ -40,12 +53,10 @@ export const updateUserDetails = async (req, res) => {
 
 export const getAllUserTypeDD = async (req, res) => {
   try {
-    // Execute the stored procedure
     const result = await executeQuery('EXEC [dbo].[sp_get_all_user_type]');
 
     res.status(200).json(result);
   } catch (error) {
-    // Log error and send a 500 response
     console.error(error);
     res.status(500).json({ error: error.message });
   }
@@ -53,47 +64,48 @@ export const getAllUserTypeDD = async (req, res) => {
 
 export const insertUserDetails = async (req, res) => {
   const {
-    User_ID,
-    User_Name,
-    User_Password,
-    User_Role,
-    Status,
-    Locked,
-    CreatedBy,
-    PassExpDays,
-    LoginAttempt,
-    Name,
-    PlantCode,
-    Line,
-    EmailId,
-    MobileNo,
-    isChangePassword,
+    user_id,
+    user_name,
+    user_password,
+    user_role,
+    user_status,
+    locked,
+    created_by,
+    pass_exp_days,
+    login_attempt,
+    name,
+    plant_code,
+    line_no,
+    email_id,
+    warehouse_code,
+    mobile_no,
+    is_change_password,
   } = req.body;
-
+  console.log(req.body);
   try {
     const result = await executeQuery(
-      'EXEC [dbo].[sp_user_insert] @user_id, @user_name, @user_password, @user_role, @user_status, @locked, @created_by, @pass_exp_days, @login_attempt, @name, @plant_code, @line_code, @email_id, @mobile_no, @is_change_password',
+      'EXEC [dbo].[sp_user_insert] @user_id, @user_name, @user_password, @user_role, @user_status, @locked, @created_by, @pass_exp_days, @login_attempt, @name, @plant_code, @line_no, @email_id, @mobile_no, @is_change_password',
       {
-        user_id: { type: sql.NVarChar(150), value: User_ID },
-        user_name: { type: sql.NVarChar(150), value: User_Name },
+        user_id: { type: sql.NVarChar(150), value: user_id },
+        user_name: { type: sql.NVarChar(150), value: user_name },
         user_password: {
           type: sql.NVarChar(150),
-          value: encryptPassword(User_Password.toString()),
+          value: encryptPassword(user_password.toString()),
         },
-        user_role: { type: sql.NVarChar(150), value: User_Role },
-        user_status: { type: sql.NVarChar(150), value: Status },
-        locked: { type: sql.NVarChar(150), value: Locked },
-        created_by: { type: sql.NVarChar(150), value: CreatedBy },
-        pass_exp_days: { type: sql.Int, value: parseInt(PassExpDays) },
-        login_attempt: { type: sql.Int, value: parseInt(LoginAttempt) },
-        name: { type: sql.NVarChar(150), value: Name },
-        plant_code: { type: sql.NVarChar(150), value: PlantCode },
-        line_code: { type: sql.NVarChar(150), value: Line },
-        email_id: { type: sql.NVarChar(150), value: EmailId },
-        mobile_no: { type: sql.BigInt, value: parseInt(MobileNo) },
+        user_role: { type: sql.NVarChar(150), value: user_role },
+        user_status: { type: sql.NVarChar(150), value: user_status },
+        locked: { type: sql.NVarChar(150), value: locked },
+        created_by: { type: sql.NVarChar(150), value: created_by },
+        pass_exp_days: { type: sql.Int, value: parseInt(pass_exp_days) },
+        login_attempt: { type: sql.Int, value: parseInt(login_attempt) },
+        name: { type: sql.NVarChar(150), value: name },
+        plant_code: { type: sql.NVarChar(150), value: plant_code },
+        line_no: { type: sql.NVarChar(10), value: line_no },
+        email_id: { type: sql.NVarChar(150), value: email_id },
+        mobile_no: { type: sql.BigInt, value: parseInt(mobile_no) },
         is_change_password: {
           type: sql.Bit,
-          value: isChangePassword === true ? 1 : 0,
+          value: is_change_password === true ? 1 : 0,
         },
       }
     );

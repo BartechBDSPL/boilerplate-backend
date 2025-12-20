@@ -1,0 +1,31 @@
+<xpml><page quantity='0' pitch='60.0 mm'></xpml>SIZE 102.7 mm, 60 mm
+DIRECTION 0,0
+REFERENCE 0,0
+OFFSET 0 mm
+SET PEEL OFF
+SET CUTTER OFF
+SET PARTIAL_CUTTER OFF
+SET APPLICATOR OFF
+<xpml></page></xpml><xpml><page quantity='1' pitch='60.0 mm'></xpml>SET TEAR ON
+CLS
+BOX 37,19,1182,685,4
+BAR 42,587, 1139, 4
+BAR 42,501, 1139, 4
+BAR 42,414, 1139, 4
+BAR 42,327, 1139, 4
+BAR 846,328, 4, 260
+CODEPAGE 1252
+TEXT 1154,561,"0",180,9,9,"Make"
+TEXT 1154,475,"0",180,9,9,"Model"
+TEXT 1154,388,"0",180,9,9,"Serial No"
+TEXT 813,561,"0",180,9,9,"VMake"
+TEXT 813,475,"0",180,9,9,"VModel"
+TEXT 813,388,"0",180,9,9,"VSerialNo"
+QRCODE 184,165,L,6,A,180,M2,S7,"VSerialNo"
+TEXT 903,652,"0",180,8,10,"VCategoryName"
+TEXT 1154,219,"0",180,8,8,"VCompanyName"
+TEXT 1154,174,"0",180,8,8,"Factory: VAddress1"
+TEXT 1154,126,"0",180,8,8,"VAddress2"
+TEXT 1154,72,"0",180,8,8,"Email: VEmail Contact: VCustCareNo"
+PRINT 1,1
+<xpml></page></xpml><xpml><end/></xpml>

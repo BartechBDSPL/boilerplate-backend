@@ -23,8 +23,8 @@ const authWithSession = (req, res, next) => {
         });
       }
 
-      // Check session timeout - user ID is in decoded.user.user_id
       const userId = decoded.user?.user_id;
+
       if (!userId) {
         console.error('❌ Token structure missing user.user_id:', JSON.stringify(decoded, null, 2));
         return res.status(401).json({
@@ -33,11 +33,9 @@ const authWithSession = (req, res, next) => {
         });
       }
 
-      // Check if session is still valid
       const sessionCheck = sessionManager.isSessionValid(userId);
 
       if (!sessionCheck.valid) {
-        // Return HTTP 440 (Login Time-out) for frontend axios interceptor
         return res.status(440).json({
           Status: 'F',
           Message: sessionCheck.message,
@@ -47,7 +45,6 @@ const authWithSession = (req, res, next) => {
         });
       }
 
-      // Update user activity for this request
       await sessionManager.updateUserActivity(userId);
 
       req.user = decoded;
@@ -62,7 +59,6 @@ const authWithSession = (req, res, next) => {
   }
 };
 
-// Original auth middleware (without session checking) for backward compatibility
 const auth = (req, res, next) => {
   try {
     const token = req.headers['authorization'];

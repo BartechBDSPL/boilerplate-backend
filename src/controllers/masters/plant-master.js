@@ -1,7 +1,6 @@
 import { executeQuery } from '../../config/db.js';
 import { sql } from '../../config/db.js';
 
-// Get all company names from Company Master
 export const getAllCompanyName = async (req, res) => {
   try {
     const getAllNames = await executeQuery('EXEC sp_company_master_get_company_name');
@@ -12,9 +11,9 @@ export const getAllCompanyName = async (req, res) => {
   }
 };
 
-// Insert details into Plant Master
 export const insertAllDetails = async (req, res) => {
   const { companyCode, plantCode, plantName, address, city, state, plantStatus, createdBy } = req.body;
+  console.log(req.body);
   try {
     const insertDetails = await executeQuery(
       'EXEC sp_plant_master_insert @company_code, @plant_code, @plant_name, @address, @city, @state, @plant_status, @created_by, @barcode',
@@ -40,9 +39,9 @@ export const insertAllDetails = async (req, res) => {
   }
 };
 
-// Update details in Plant Master
 export const updateDetails = async (req, res) => {
   const { plantId, plantCode, plantName, address, city, state, plantStatus, updatedBy } = req.body;
+  console.log(req.body);
   try {
     const updateDetails = await executeQuery(
       'EXEC sp_plant_master_update @plant_id, @plant_code, @plant_name, @address, @city, @state, @plant_status, @updated_by',
@@ -57,6 +56,7 @@ export const updateDetails = async (req, res) => {
         { name: 'updated_by', type: sql.NVarChar, value: updatedBy },
       ]
     );
+    console.log(updateDetails);
     res.json({
       Status: updateDetails[0].Status,
       Message: updateDetails[0].Message,
@@ -67,7 +67,6 @@ export const updateDetails = async (req, res) => {
   }
 };
 
-// Get all details for plant master - To show in the table
 export const getAllDetailsPlantMaster = async (req, res) => {
   try {
     const getAllDetailsPlantMaster = await executeQuery('EXEC sp_plant_master_get_all_details');
@@ -78,7 +77,6 @@ export const getAllDetailsPlantMaster = async (req, res) => {
   }
 };
 
-// Get all plant codes
 export const getAllPlantCodes = async (req, res) => {
   try {
     const getAllPlantCodes = await executeQuery('EXEC sp_plant_master_get_plant_codes');

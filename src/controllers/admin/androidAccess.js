@@ -40,10 +40,8 @@ export const getHHTRegisterSpecific = async (req, res) => {
 
 export const getAllRegisterHHTDevice = async (req, res) => {
   try {
-    // Execute the stored procedure
     const result = await executeQuery('EXEC [dbo].[sp_get_all_register_hht_device]');
 
-    // Return the result directly to the client
     res.json(result);
   } catch (error) {
     console.error('Error executing stored procedure:', error);

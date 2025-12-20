@@ -16,7 +16,6 @@ export default [
       ecmaVersion: 2021,
       sourceType: 'module',
       globals: {
-        // Node.js globals
         process: 'readonly',
         Buffer: 'readonly',
         __dirname: 'readonly',
@@ -30,9 +29,9 @@ export default [
         setInterval: 'readonly',
         clearTimeout: 'readonly',
         clearInterval: 'readonly',
-        // Browser globals
+
         fetch: 'readonly',
-        // Jest globals
+
         describe: 'readonly',
         it: 'readonly',
         test: 'readonly',
@@ -57,7 +56,7 @@ export default [
           argsIgnorePattern: '^_',
         },
       ],
-      // Allow some common patterns
+
       'no-empty': 'warn',
       'no-unreachable': 'error',
       'no-constant-binary-expression': 'error',

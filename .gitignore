@@ -1,8 +1,18 @@
 .env
 node_modules/
-*.prn
+# *.prn
 dist/
 .logs
 .log
 *.log
 /logs
+
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.svg
+*.webp
+*.ico

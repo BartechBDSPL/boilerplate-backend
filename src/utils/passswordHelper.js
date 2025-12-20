@@ -4,7 +4,7 @@ import { originalKey } from './constants.js';
 const key = crypto.scryptSync(originalKey, 'salt', 24);
 export const encryptPassword = password => {
   try {
-    const iv = Buffer.alloc(8, 0); // TripleDES uses 8-byte IV
+    const iv = Buffer.alloc(8, 0);
     const cipher = crypto.createCipheriv('des-ede3-cbc', key, iv);
     let encrypted = cipher.update(password, 'utf8', 'base64');
     encrypted += cipher.final('base64');
@@ -16,7 +16,7 @@ export const encryptPassword = password => {
 
 export const decryptPassword = encryptedPassword => {
   try {
-    const iv = Buffer.alloc(8, 0); // TripleDES uses 8-byte IV
+    const iv = Buffer.alloc(8, 0);
     const decipher = crypto.createDecipheriv('des-ede3-cbc', key, iv);
     let decrypted = decipher.update(encryptedPassword, 'base64', 'utf8');
     decrypted += decipher.final('utf8');

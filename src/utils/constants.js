@@ -13,3 +13,19 @@ export const SAP_SERVER = {
   Password: 'GmUx+51r',
   Language: 'EN',
 };
+
+// SAP Material Details Service
+export const SAP_MATERIAL_SERVICE = {
+  BASE_URL: 'https://matrixdev.matrixcomsec.com:44310/sap/bc/zfg_details_srv',
+  SAP_CLIENT: '600',
+  USERNAME: 'ABAPDEV2',
+  PASSWORD: 'Dev@300',
+};
+
+// SAP Production Order Service
+export const SAP_PRODUCTION_ORDER_SERVICE = {
+  BASE_URL: 'https://matrixdev.matrixcomsec.com:44310/sap/bc/ytest1',
+  SAP_CLIENT: '600',
+  USERNAME: 'ABAPDEV2',
+  PASSWORD: 'Dev@300',
+};

@@ -9,6 +9,16 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Helper function to clean special characters from data
+const cleanSpecialCharacters = (value) => {
+  if (!value) return value;
+  if (typeof value !== 'string') return String(value);
+  return value
+    .replace(/\u00AD/g, '-')  // Replace soft hyphen with regular hyphen
+    .replace(/˚/g, '°')        // Replace ring above with degree symbol
+    .replace(/­/g, '-');       // Replace any other soft hyphens
+};
+
 function isPrinterReachable(ip, port) {
   return new Promise(resolve => {
     const socket = new net.Socket();
@@ -79,7 +89,7 @@ async function printToTscPrinter(prnFilePath, printerIP, printerPort) {
 async function batchPrintToTscPrinter(printJobs, printerIP, printerPort) {
   return new Promise((resolve, reject) => {
     const client = new net.Socket();
-    client.setTimeout(30000); // Increased timeout for batch printing
+    client.setTimeout(30000);
 
     client.connect(
       {
@@ -88,7 +98,6 @@ async function batchPrintToTscPrinter(printJobs, printerIP, printerPort) {
       },
       async () => {
         try {
-          // Concatenate all PRN files into a single buffer
           let combinedContent = Buffer.concat(printJobs.map(job => fs.readFileSync(job.prnFilePath)));
 
           client.write(combinedContent, err => {
@@ -96,16 +105,7 @@ async function batchPrintToTscPrinter(printJobs, printerIP, printerPort) {
               console.error('Error in batch printing:', err);
               reject(err);
             } else {
-              // Clean up temp files
-              printJobs.forEach(job => {
-                try {
-                  if (fs.existsSync(job.prnFilePath)) {
-                    fs.unlinkSync(job.prnFilePath);
-                  }
-                } catch (cleanupError) {
-                  console.error('Error cleaning up temp file:', cleanupError);
-                }
-              });
+              console.log(`Batch print completed. File retained at: ${printJobs[0].prnFilePath}`);
               client.end();
               resolve();
             }
@@ -133,22 +133,22 @@ async function batchPrintToTscPrinter(printJobs, printerIP, printerPort) {
 
 function preparePrnFile(data) {
   const templatePath = path.join(__dirname, '..', '..', 'prn-printer', 'StorageType5050.prn');
-  const tempPrnPath = path.join(__dirname, `temp_${Date.now()}.prn`);
+
+  const persistentPrnPath = path.join(__dirname, 'location_label_print.prn');
 
   try {
     let template = fs.readFileSync(templatePath, 'utf-8');
 
     Object.keys(data).forEach(key => {
-      template = template.replace(new RegExp(key, 'g'), data[key]);
+      // Clean special characters from the value before replacement
+      const cleanedValue = cleanSpecialCharacters(data[key]);
+      template = template.replace(new RegExp(key, 'g'), cleanedValue);
     });
 
-    fs.writeFileSync(tempPrnPath, template);
-    return tempPrnPath;
+    fs.writeFileSync(persistentPrnPath, template);
+    return persistentPrnPath;
   } catch (error) {
     console.error('Error preparing PRN file:', error);
-    if (fs.existsSync(tempPrnPath)) {
-      fs.unlinkSync(tempPrnPath);
-    }
     return null;
   }
 }

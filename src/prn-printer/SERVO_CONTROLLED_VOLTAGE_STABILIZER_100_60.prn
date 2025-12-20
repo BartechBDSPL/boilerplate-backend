@@ -1,0 +1,31 @@
+<xpml><page quantity='0' pitch='60.0 mm'></xpml>SIZE 102.7 mm, 60 mm
+DIRECTION 0,0
+REFERENCE 0,0
+OFFSET 0 mm
+SET PEEL OFF
+SET CUTTER OFF
+SET PARTIAL_CUTTER OFF
+SET APPLICATOR OFF
+<xpml></page></xpml><xpml><page quantity='1' pitch='60.0 mm'></xpml>SET TEAR ON
+CLS
+BOX 35,17,1184,687,8
+BAR 42,551, 1139, 8
+BAR 42,457, 1139, 8
+BAR 42,364, 1139, 8
+BAR 42,270, 1139, 8
+BAR 42,177, 1139, 8
+BAR 608,185, 8, 369
+CODEPAGE 1252
+TEXT 863,641,"0",180,9,17,"VCategoryName"
+TEXT 1151,525,"0",180,10,10,"Capacity : VCapacity"
+TEXT 1151,432,"0",180,10,10,"Input Volt Min.: VVoltMin"
+TEXT 1151,338,"0",180,10,10,"Output Volt.:"
+TEXT 1151,244,"0",180,10,10,"Sr. No.:"
+TEXT 583,525,"0",180,10,10,"Model No.: VModel"
+TEXT 583,432,"0",180,10,10,"Input Volt Max.: VVoltMax"
+TEXT 583,338,"0",180,10,10,"VOutputVolt"
+TEXT 583,244,"0",180,10,10,"VSerialNo"
+TEXT 1151,124,"0",180,12,12,"MFG. BY VCompanyName"
+QRCODE 184,165,L,6,A,180,M2,S7,"VSerialNo"
+PRINT 1,1
+<xpml></page></xpml><xpml><end/></xpml>

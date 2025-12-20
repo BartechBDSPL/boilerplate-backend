@@ -1,0 +1,51 @@
+<xpml><page quantity='0' pitch='130.0 mm'></xpml>SIZE 82.7 mm, 130 mm
+DIRECTION 0,0
+REFERENCE 0,0
+OFFSET 0 mm
+SET PEEL OFF
+SET CUTTER OFF
+SET PARTIAL_CUTTER OFF
+SET APPLICATOR OFF
+<xpml></page></xpml><xpml><page quantity='1' pitch='130.0 mm'></xpml>SET TEAR ON
+CLS
+BOX 39,20,942,1516,4
+CODEPAGE 1252
+TEXT 915,442,"0",90,16,16,"VCategoryName"
+TEXT 227,61,"0",90,14,14,"VCompanyName"
+TEXT 163,61,"0",90,8,8,"Factory: "
+TEXT 163,182,"0",90,8,8,"VAddress1"
+TEXT 123,61,"0",90,8,8,"VAddress2"
+TEXT 83,61,"0",90,8,8,"Email: "
+TEXT 83,155,"0",90,8,8,"VEmail, Customer Care No.VCustCareNo"
+BAR 828,22, 4, 1490
+BAR 413,22, 4, 1490
+BAR 776,22, 4, 1490
+BAR 724,22, 4, 1490
+BAR 672,22, 4, 1490
+BAR 621,22, 4, 1490
+BAR 569,23, 4, 1490
+BAR 517,22, 4, 1490
+BAR 465,25, 4, 1490
+TEXT 816,61,"0",90,8,8,"Make/Brand"
+TEXT 765,61,"0",90,8,8,"Model No"
+TEXT 714,61,"0",90,8,8,"Capacity"
+TEXT 663,61,"0",90,8,8,"Input Rating"
+TEXT 612,61,"0",90,8,8,"Name Of Refrigerant"
+TEXT 561,61,"0",90,8,8,"Operating Temp."
+TEXT 509,61,"0",90,8,8,"Weight Of Machine"
+TEXT 458,61,"0",90,8,8,"Serial Number"
+TEXT 816,425,"0",90,8,8,"VMake"
+QRCODE 235,1313,L,8,A,90,M2,S7,"VSerialNo"
+TEXT 765,425,"0",90,8,8,"VModel"
+TEXT 714,425,"0",90,8,8,"VCapacity"
+TEXT 663,425,"0",90,8,8,"VInputRating"
+TEXT 612,425,"0",90,8,8,"VNameOfRefrigerant"
+TEXT 561,425,"0",90,8,8,"VOperatingTemp"
+TEXT 509,425,"0",90,8,8,"VWeightOfMachine"
+TEXT 458,425,"0",90,8,8,"VSerialNo"
+BAR 414,391, 415, 4
+TEXT 400,61,"0",90,9,9,"FOR INDOOR USE ONLY"
+TEXT 354,61,"0",90,9,9,"DO NOT USE THIS PRODUCT WITHOUT PROPER EARTHING."
+TEXT 307,61,"0",90,9,9,"DO NOT ALTER SYSTEM COMPONENTS"
+PRINT 1,1
+<xpml></page></xpml><xpml><end/></xpml>

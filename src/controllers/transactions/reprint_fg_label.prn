@@ -1,0 +1,47 @@
+<xpml><page quantity='0' pitch='130.0 mm'></xpml>SIZE 82.7 mm, 130 mm
+DIRECTION 0,0
+REFERENCE 0,0
+OFFSET 0 mm
+SET PEEL OFF
+SET CUTTER OFF
+SET PARTIAL_CUTTER OFF
+SET APPLICATOR OFF
+<xpml></page></xpml><xpml><page quantity='1' pitch='130.0 mm'></xpml>SET TEAR ON
+CLS
+BOX 37,18,944,1518,8
+CODEPAGE 1252
+TEXT 893,442,"0",90,16,16,"Blood Bag Tube Stripper"
+TEXT 248,61,"0",90,16,16,"MARK ENTERPRISES"
+TEXT 170,62,"0",90,8,8,"Factory: "
+TEXT 170,182,"0",90,8,8,"Plot No.93/2, Street No.17, Satpur MIDC"
+TEXT 127,61,"0",90,8,8,"Nashik-422007, Maharashtra, India."
+TEXT 83,61,"0",90,8,8,"Email: "
+TEXT 83,155,"0",90,8,8,"service@markenworld.com, Customer Care No.+91 9130305959"
+BAR 785,22, 8, 1490
+BAR 257,22, 8, 1490
+BAR 719,22, 8, 1490
+BAR 653,22, 8, 1490
+BAR 587,22, 8, 1490
+BAR 521,22, 8, 1490
+BAR 455,22, 8, 1490
+BAR 389,22, 8, 1490
+BAR 323,22, 8, 1490
+TEXT 773,61,"0",90,10,10,"Make/Brand"
+TEXT 708,61,"0",90,10,10,"Model No"
+TEXT 643,61,"0",90,10,10,"Capacity"
+TEXT 578,61,"0",90,10,10,"Input Rating"
+TEXT 512,61,"0",90,10,10,"Name Of Refrigerant"
+TEXT 447,61,"0",90,10,10,"Operating Temp."
+TEXT 381,61,"0",90,10,10,"Weight Of Machine"
+TEXT 316,61,"0",90,10,10,"Serial Number"
+TEXT 773,471,"0",90,10,10,": MarkEn"
+QRCODE 235,1313,L,8,A,90,M2,S7,"0111250101010002"
+TEXT 708,471,"0",90,10,10,": MBTS-01"
+TEXT 643,471,"0",90,10,10,": 15"
+TEXT 578,471,"0",90,10,10,": 5151"
+TEXT 512,471,"0",90,10,10,": 1215"
+TEXT 447,471,"0",90,10,10,": 635"
+TEXT 381,471,"0",90,10,10,": 625"
+TEXT 316,471,"0",90,10,10,": 0111250101010002"
+PRINT 1,1
+<xpml></page></xpml><xpml><end/></xpml>

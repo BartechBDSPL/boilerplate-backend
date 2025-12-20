@@ -4,6 +4,17 @@ import xlsx from 'xlsx';
 import path from 'path';
 import fs from 'fs';
 
+// Helper function to clean special characters from Excel data
+const cleanSpecialCharacters = (value) => {
+  if (!value) return value;
+  if (typeof value !== 'string') return value;
+  return value
+    .replace(/\u00AD/g, '-')  // Replace soft hyphen with regular hyphen
+    .replace(/˚/g, '°')        // Replace ring above with degree symbol
+    .replace(/­/g, '-')        // Replace any other soft hyphens
+    .trim();
+};
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = 'uploads/';
@@ -27,7 +38,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Initialize upload middleware
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
@@ -57,7 +67,6 @@ export const uploadStock = async (req, res) => {
         });
       }
 
-      // Check if file exists
       if (!req.file) {
         return res.status(400).json({
           Status: 'F',
@@ -68,14 +77,12 @@ export const uploadStock = async (req, res) => {
       const filePath = req.file.path;
 
       try {
-        // Read the Excel file
         const workbook = xlsx.readFile(filePath);
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const data = xlsx.utils.sheet_to_json(worksheet);
 
         if (data.length === 0) {
-          // Delete the file after processing
           fs.unlinkSync(filePath);
           return res.status(400).json({
             Status: 'F',
@@ -83,7 +90,6 @@ export const uploadStock = async (req, res) => {
           });
         }
 
-        // Check if required headers exist
         const requiredHeaders = [
           'Material',
           'Plant',
@@ -102,7 +108,6 @@ export const uploadStock = async (req, res) => {
         const missingHeaders = requiredHeaders.filter(header => !fileHeaders.includes(header));
 
         if (missingHeaders.length > 0) {
-          // Delete the file after processing
           fs.unlinkSync(filePath);
           return res.status(400).json({
             Status: 'F',
@@ -132,16 +137,16 @@ export const uploadStock = async (req, res) => {
         for (const chunk of dataChunks) {
           const chunkPromises = chunk.map(async row => {
             try {
-              const material = row['Material'];
-              const plant = row['Plant'];
-              const storageLocation = row['Storage Location'];
-              const stockCategory = row['Stock Category'];
-              const batch = row['Batch'];
-              const materialDescription = row['Material Description'];
-              const storageType = row['Storage Type'];
-              const storageBin = row['Storage Bin'];
+              const material = cleanSpecialCharacters(row['Material']);
+              const plant = cleanSpecialCharacters(row['Plant']);
+              const storageLocation = cleanSpecialCharacters(row['Storage Location']);
+              const stockCategory = cleanSpecialCharacters(row['Stock Category']);
+              const batch = cleanSpecialCharacters(row['Batch']);
+              const materialDescription = cleanSpecialCharacters(row['Material Description']);
+              const storageType = cleanSpecialCharacters(row['Storage Type']);
+              const storageBin = cleanSpecialCharacters(row['Storage Bin']);
               const availableStock = row['Available stock'];
-              const baseUnitOfMeasure = row['Base Unit of Measure'];
+              const baseUnitOfMeasure = cleanSpecialCharacters(row['Base Unit of Measure']);
               const grDate = row['GR Date'];
 
               const result = await executeQuery(
@@ -150,7 +155,7 @@ export const uploadStock = async (req, res) => {
                   {
                     name: 'OrderNumber',
                     type: sql.NVarChar,
-                    value: OrderNumber,
+                    value: cleanSpecialCharacters(OrderNumber),
                   },
                   { name: 'Material', type: sql.NVarChar, value: material },
                   { name: 'Plant', type: sql.NVarChar, value: plant },
@@ -225,7 +230,6 @@ export const uploadStock = async (req, res) => {
 
           const chunkResults = await Promise.all(chunkPromises);
 
-          // Categorize the results
           chunkResults.forEach(result => {
             if (result.Status === 'T') {
               results.success.push({
@@ -241,7 +245,6 @@ export const uploadStock = async (req, res) => {
           });
         }
 
-        // Delete the file after processing
         fs.unlinkSync(filePath);
 
         return res.status(200).json({

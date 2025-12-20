@@ -6,7 +6,6 @@ const createTransporter = () => {
   return nodemailer.createTransport(CONFIG.email);
 };
 
-// Scrapping Email Template Function
 const createScrappingApprovalEmailTemplate = (scrappingSrNo, date) => {
   const approvalLink = `${frontendUrl}/approve-scrapping?srNo=${scrappingSrNo}&date=${date}`;
   const currentDate = new Date().toLocaleDateString('en-IN', {
@@ -332,7 +331,6 @@ const createScrappingApprovalEmailTemplate = (scrappingSrNo, date) => {
 </html>`;
 };
 
-// Scrapping Approval Email Sender Function
 export const sendScrappingApprovalEmail = async (scrappingSrNo, date) => {
   return new Promise((resolve, reject) => {
     const transporter = createTransporter();

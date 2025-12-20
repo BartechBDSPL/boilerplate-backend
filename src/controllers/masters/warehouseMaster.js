@@ -61,7 +61,6 @@ export const updateDetails = async (req, res) => {
   }
 };
 
-// Insert new data
 export const insertDetails = async (req, res) => {
   const { PlantCode, WarehouseCode, WarehouseDesc, WarehouseAddress, WarehouseCategory, WStatus, User } = req.body;
   try {

@@ -4,7 +4,7 @@ import { executeQuery } from '../config/db.js';
 class SessionManager {
   constructor() {
     this.cache = new NodeCache();
-    this.sessionTimeoutHours = 2; // Default fallback (2 hours)
+    this.sessionTimeoutHours = 2;
     this.lastSessionTimeUpdate = null;
     this.refreshInterval = null;
 
@@ -15,9 +15,8 @@ class SessionManager {
     try {
       const result = await executeQuery('EXEC sp_session_master_get_all_details');
       if (result && result.length > 0) {
-        const sessionData = result[0]; // Only one record expected
+        const sessionData = result[0];
 
-        // Convert to hours based on unit
         if (sessionData.unit === 'HR') {
           this.sessionTimeoutHours = sessionData.session_time;
         } else if (sessionData.unit === 'MIN') {
@@ -32,7 +31,7 @@ class SessionManager {
           `✅ Session timeout updated: ${sessionData.session_time} ${sessionData.unit} (${this.sessionTimeoutHours} hours)`
         );
       } else {
-        console.warn('No session master data found, using default timeout');
+        // console.warn('No session master data found, using default timeout');
       }
     } catch (error) {
       console.error('❌ Error fetching session timeout:', error);
@@ -50,7 +49,7 @@ class SessionManager {
         await this.getSessionTimeout();
       },
       2 * 60 * 60 * 1000
-    ); // 2 hours
+    );
   }
 
   stopAutoRefresh() {
@@ -60,12 +59,10 @@ class SessionManager {
     }
   }
 
-  // Refresh session timeout from DB if it's been more than 2 hours since last check
   async refreshSessionTimeoutIfNeeded() {
     const now = new Date();
     if (!this.lastSessionTimeUpdate || now - this.lastSessionTimeUpdate > 2 * 60 * 60 * 1000) {
-      // 2 hours
-      console.log('🔄 Manual refresh triggered (2+ hours since last update)');
+      // console.log('🔄 Manual refresh triggered (2+ hours since last update)');
       await this.getSessionTimeout();
     }
   }
@@ -74,12 +71,11 @@ class SessionManager {
     await this.refreshSessionTimeoutIfNeeded();
 
     const now = new Date();
+
     this.cache.set(userId, {
       lastActivity: now,
       timeoutHours: this.sessionTimeoutHours,
     });
-
-    console.log(`Activity updated for user ${userId} at ${now.toISOString()}`);
   }
 
   isSessionValid(userId) {
@@ -99,8 +95,7 @@ class SessionManager {
     const timeDiffHours = timeDiffMs / (1000 * 60 * 60);
 
     if (timeDiffHours > userSession.timeoutHours) {
-      // Session expired
-      this.cache.del(userId); // Remove expired session
+      this.cache.del(userId);
 
       const inactiveHours = Math.floor(timeDiffHours);
       const inactiveMinutes = Math.floor((timeDiffHours - inactiveHours) * 60);
@@ -130,11 +125,19 @@ class SessionManager {
   }
 
   removeUserSession(userId) {
-    this.cache.del(userId);
-    console.log(`Session removed for user ${userId}`);
+    const deleted = this.cache.del(userId);
+    if (deleted) {
+      console.log(`✅ Session removed for user ${userId}`);
+    } else {
+      console.log(`⚠️ No active session found for user ${userId}`);
+    }
+    return deleted;
   }
 
-  // Get all active sessions (for debugging)
+  forceLogoutUser(userId) {
+    return this.removeUserSession(userId);
+  }
+
   getActiveSessions() {
     const keys = this.cache.keys();
     const sessions = {};
@@ -180,8 +183,5 @@ class SessionManager {
 }
 
 const sessionManager = new SessionManager();
-
-// Don't initialize immediately - wait for database to be ready
-// The session timeout will be fetched on first use or manually triggered
 
 export default sessionManager;
