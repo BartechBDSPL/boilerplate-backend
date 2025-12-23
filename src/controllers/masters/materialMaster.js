@@ -1,5 +1,5 @@
 import { executeQuery, sql } from '../../config/db.js';
-import { SAP_MATERIAL_SERVICE } from '../../utils/constants.js';
+import { SAP_MATERIAL_SERVICE, generateRandomEAN, generateRandomMRP, generateRandomProductFamily, trimLeadingZeros } from '../../utils/constants.js';
 import https from 'https';
 
 export const syncMaterialsByType = async (req, res) => {
@@ -12,16 +12,33 @@ export const syncMaterialsByType = async (req, res) => {
     
     const sapMaterials = await callSAPMaterialService(sapUrl, material_type);
     console.log(sapMaterials)
-    // Upsert each material into database
+    // Upsert each material into database (use generated fallbacks if SAP fields are missing)
     for (const material of sapMaterials) {
       try {
+        const eanValue = material.internationalArticleNo && String(material.internationalArticleNo).trim().length > 0
+          ? String(material.internationalArticleNo)
+          : generateRandomEAN();
+
+        const productFamilyValue = material.productFamily && String(material.productFamily).trim().length > 0
+          ? String(material.productFamily)
+          : generateRandomProductFamily();
+
+        const productNameValue = material.productName || material.materialName || '';
+
+        const mrpValue = material.mrp && String(material.mrp).trim().length > 0
+          ? String(material.mrp)
+          : generateRandomMRP();
+
         const result = await executeQuery(
           `EXEC sp_material_master_upsert 
-             @material_number, @material_description, @ean_number, @updated_by`,
+             @material_number, @material_description, @ean_number, @product_family, @product_name, @mrp, @updated_by`,
           [
-            { name: 'material_number', type: sql.NVarChar, value: material.material },
+            { name: 'material_number', type: sql.NVarChar, value: trimLeadingZeros(material.material) },
             { name: 'material_description', type: sql.NVarChar, value: material.materialName },
-            { name: 'ean_number', type: sql.NVarChar, value: material.internationalArticleNo || '' },
+            { name: 'ean_number', type: sql.NVarChar, value: eanValue },
+            { name: 'product_family', type: sql.NVarChar, value: productFamilyValue },
+            { name: 'product_name', type: sql.NVarChar, value: productNameValue },
+            { name: 'mrp', type: sql.NVarChar, value: mrpValue },
             { name: 'updated_by', type: sql.NVarChar, value: created_by },
           ]
         );
@@ -116,18 +133,42 @@ export const getAllMaterialDetails = async (req, res) => {
 };
 
 export const updateMaterialDetails = async (req, res) => {
-  const { id, materialNumber, materialDescription, eanNumber, updatedBy } = req.body;
+  const {
+    id,
+    material_number,
+    material_description,
+    ean_number,
+    product_family,
+    product_name,
+    mrp,
+    input_rating,
+    poe,
+    product_url,
+    bis,
+    product_label_name,
+    packaging_label_name,
+    updated_by,
+  } = req.body;
 
   try {
     const result = await executeQuery(
       `EXEC sp_material_master_update 
-         @id, @materialNumber, @materialDescription, @eanNumber, @updatedBy`,
+         @id, @material_number, @material_description, @ean_number, @product_family, @product_name, @mrp, @input_rating, @poe, @product_url, @bis, @product_label_name, @packaging_label_name, @updated_by`,
       [
         { name: 'id', type: sql.Int, value: id },
-        { name: 'materialNumber', type: sql.NVarChar, value: materialNumber },
-        { name: 'materialDescription', type: sql.NVarChar, value: materialDescription },
-        { name: 'eanNumber', type: sql.NVarChar, value: eanNumber },
-        { name: 'updatedBy', type: sql.NVarChar, value: updatedBy },
+        { name: 'material_number', type: sql.NVarChar, value: trimLeadingZeros(material_number) },
+        { name: 'material_description', type: sql.NVarChar, value: material_description },
+        { name: 'ean_number', type: sql.NVarChar, value: ean_number },
+        { name: 'product_family', type: sql.NVarChar, value: product_family },
+        { name: 'product_name', type: sql.NVarChar, value: product_name },
+        { name: 'mrp', type: sql.NVarChar, value: mrp },
+        { name: 'input_rating', type: sql.NVarChar, value: input_rating },
+        { name: 'poe', type: sql.NVarChar, value: poe },
+        { name: 'product_url', type: sql.NVarChar, value: product_url },
+        { name: 'bis', type: sql.NVarChar, value: bis },
+        { name: 'product_label_name', type: sql.NVarChar, value: product_label_name },
+        { name: 'packaging_label_name', type: sql.NVarChar, value: packaging_label_name },
+        { name: 'updated_by', type: sql.NVarChar, value: updated_by },
       ]
     );
 
@@ -143,6 +184,15 @@ export const insertMaterialDetails = async (req, res) => {
     material_number,
     material_description,
     ean_number,
+    product_family,
+    product_name,
+    mrp,
+    input_rating,
+    poe,
+    product_url,
+    bis,
+    product_label_name,
+    packaging_label_name,
     created_by,
   } = req.body;
 
@@ -150,11 +200,20 @@ export const insertMaterialDetails = async (req, res) => {
   try {
     const result = await executeQuery(
       `EXEC sp_material_master_insert 
-         @material_number, @material_description, @ean_number, @created_by`,
+         @material_number, @material_description, @ean_number, @product_family, @product_name, @mrp, @input_rating, @poe, @product_url, @bis, @product_label_name, @packaging_label_name, @created_by`,
       [
-        { name: 'material_number', type: sql.NVarChar, value: material_number },
+        { name: 'material_number', type: sql.NVarChar, value: trimLeadingZeros(material_number) },
         { name: 'material_description', type: sql.NVarChar, value: material_description },
         { name: 'ean_number', type: sql.NVarChar, value: ean_number },
+        { name: 'product_family', type: sql.NVarChar, value: product_family },
+        { name: 'product_name', type: sql.NVarChar, value: product_name },
+        { name: 'mrp', type: sql.NVarChar, value: mrp },
+        { name: 'input_rating', type: sql.NVarChar, value: input_rating },
+        { name: 'poe', type: sql.NVarChar, value: poe },
+        { name: 'product_url', type: sql.NVarChar, value: product_url },
+        { name: 'bis', type: sql.NVarChar, value: bis },
+        { name: 'product_label_name', type: sql.NVarChar, value: product_label_name },
+        { name: 'packaging_label_name', type: sql.NVarChar, value: packaging_label_name },
         { name: 'created_by', type: sql.NVarChar, value: created_by },
       ]
     );

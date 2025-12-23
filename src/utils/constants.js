@@ -29,3 +29,40 @@ export const SAP_PRODUCTION_ORDER_SERVICE = {
   USERNAME: 'ABAPDEV2',
   PASSWORD: 'Dev@300',
 };
+
+// Random value helpers for material records
+const RANDOM_WORDS = [
+  'Alpha', 'Beta', 'Gamma', 'Delta', 'Sigma', 'Prime', 'Nova', 'Aero', 'Omni', 'Core', 'Flex', 'Quantum', 'Vertex', 'Apex', 'Pulse', 'Zenith'
+];
+
+export function generateRandomEAN() {
+  // Generate a 13-digit numeric string (EAN-13 like)
+  const min = 1e12; // 1000000000000
+  const max = 9.999999999999e12; // less than 1e13
+  const n = Math.floor(Math.random() * (max - min + 1)) + min;
+  return String(n).slice(0, 13);
+}
+
+export function generateRandomMRP() {
+  // Generate a price between 50.00 and 10,000.00 with two decimals
+  const value = Math.random() * (10000 - 50) + 50;
+  return value.toFixed(2);
+}
+
+export function generateRandomProductFamily() {
+  // Return 1-3 random words joined
+  const count = Math.floor(Math.random() * 3) + 1; // 1..3 words
+  const parts = [];
+  for (let i = 0; i < count; i++) {
+    parts.push(RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)]);
+  }
+  return parts.join(' ');
+}
+
+export function trimLeadingZeros(value) {
+  // Remove leading zeros from identifiers (returns '0' if all zeros)
+  if (value === null || value === undefined) return value;
+  const v = String(value);
+  const trimmed = v.replace(/^0+/, '');
+  return trimmed === '' ? '0' : trimmed;
+}

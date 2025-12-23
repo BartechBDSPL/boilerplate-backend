@@ -1,167 +1,140 @@
-# API Documentation
+﻿# API Postman Collection
 
-## Transaction Routes
 
-### POST /get-active-production-orders-by-assigned-line
+---
 
-Retrieves active production orders for a specific assigned line.
-
-#### Request Body
+## 1) Insert Material 
+- **URL:** `${BACKEND_URL}/api/master/insert-material-details`
+- **Method:** POST
+- **Request Body (application/json):
 ```json
 {
-  "assigned_line": "string"  // Required: The assigned line to filter production orders
+  "material_number": "MAT-001",
+  "material_description": "Acme Widget",
+  "ean_number": "0123456789012",
+  "product_family": "Widgets",
+  "product_name": "Acme Widget Pro",
+  "mrp": "1999.00",
+  "input_rating": "A",
+  "poe": "POE-1",
+  "product_url": "https://example.com/product/1",
+  "bis": "BIS-123",
+  "product_label_name": "ACME-WIDGET",
+  "packaging_label_name": "ACME-PACK",
+  "created_by": "admin_user"
 }
 ```
+- **Response (application/json) — type:** JSON array with single status object
+  Example:
+```json
+[
+  {
+    "Status": "T",
+    "Message": "Material added successfully"
+  }
+]
+```
 
-#### Response
+---
 
-##### Success Response (200 OK)
+## 2) Update Material 
+- **URL:** `${BACKEND_URL}/api/master/update-material-details`
+- **Method:** PATCH
+- **Request Body (application/json):
 ```json
 {
-  "Status": "T",
-  "Message": "Active production orders fetched successfully",
-  "data": [
-    {
-      "order_number": "string"
-    }
-  ]
+  "id": 123,
+  "material_number": "MAT-001",
+  "material_description": "Acme Widget v2",
+  "ean_number": "0123456789012",
+  "product_family": "Widgets",
+  "product_name": "Acme Widget Plus",
+  "mrp": "2199.00",
+  "input_rating": "A+",
+  "poe": "POE-1",
+  "product_url": "https://example.com/product/1",
+  "bis": "BIS-123",
+  "product_label_name": "ACME-WIDGET",
+  "packaging_label_name": "ACME-PACK",
+  "updated_by": "admin_user"
 }
 ```
+- **Response (application/json) — type:** JSON array with single status object
+  Example:
+```json
+[
+  {
+    "Status": "T",
+    "Message": "Material updated successfully"
+  }
+]
+```
 
-##### Error Responses
+---
 
-- **400 Bad Request** (Missing required field)
+## 3) Get All Material Details 
+- **URL:** `${BACKEND_URL}/api/master/get-all-material-details`
+- **Method:** GET
+- **Response (application/json) — type:** JSON array of material objects
+  Example:
+```json
+[
+  {
+    "id": 123,
+    "material_number": "MAT-001",
+    "material_description": "Acme Widget",
+    "ean_number": "0123456789012",
+    "product_family": "Widgets",
+    "product_name": "Acme Widget Pro",
+    "mrp": "1999.00",
+    "input_rating": null,
+    "poe": null,
+    "product_url": null,
+    "bis": null,
+    "product_label_name": null,
+    "packaging_label_name": null,
+    "created_by": "admin_user",
+    "created_date": "2025-12-23T10:00:00Z",
+    "updated_by": null,
+    "updated_date": null
+  }
+]
+```
+
+---
+
+## 4) Sync Materials by Type (SAP upsert) 
+- **URL:** `${BACKEND_URL}/api/master/sync-materials-by-type`
+- **Method:** POST
+- **Request Body (application/json):
 ```json
 {
-  "Status": "F",
-  "Message": "assigned_line is required",
-  "data": null
+  "material_type": "TYPE-A",
+  "created_by": "admin_user"
 }
 ```
-
-- **500 Internal Server Error** (Database or server error)
-```json
-{
-  "Status": "F",
-  "Message": "Error message",
-  "data": null
-}
-```
-
-### POST /get-unprinted-labels
-
-Retrieves unprinted labels for a specific production order.
-
-#### Request Body
-```json
-{
-  "order_number": "string"  // Required: The production order number to fetch unprinted labels for
-}
-```
-
-#### Response
-
-##### Success Response (200 OK)
-```json
-{
-  "Status": "T",
-  "Message": "Unprinted labels fetched successfully",
-  "data": [
-    {
-      "id": "number",
-      "order_number": "string",
-      "material_number": "string",
-      "material_description": "string",
-      "batch_number": "string",
-      "serial_no": "string",
-      "quantity": "number",
-      "print_by": "string",
-      "print_date": "string",
-      "inserted_by": "string",
-      "inserted_date": "string",
-      "basic_start_date": "string",
-      "basic_end_date": "string"
-    }
-  ]
-}
-```
-
-##### Error Responses
-
-- **400 Bad Request** (Missing required field)
-```json
-{
-  "Status": "F",
-  "Message": "order_number is required",
-  "data": null
-}
-```
-
-- **500 Internal Server Error** (Database or server error)
-```json
-{
-  "Status": "F",
-  "Message": "Error message",
-  "data": null
-}
-```
-
-### POST /update-label-printing-print-status
-
-Updates the print status for a label by serial number. If `isLast` is true, also updates the production order end date.
-
-#### Request Body
-```json
-{
-  "serial_no": "string",  // Required: The serial number of the label to update
-  "print_by": "string",   // Required: The user who printed the label
-  "isLast": "boolean",    // Optional: If true, also updates the production order end date
-  "order_number": "string" // Required if isLast is true: The production order number
-}
-```
-
-#### Response
-
-##### Success Response (200 OK)
+- **Response (application/json) — type:** JSON object with status and data
 ```json
 {
   "Status": "T",
-  "Message": "Printed successfully."
+  "Message": "42 materials processed successfully",
+  "data": {
+    "totalMaterials": 42
+  }
 }
 ```
 
-##### Error Responses
+---
 
-- **400 Bad Request** (Missing required fields)
-```json
-{
-  "Status": "F",
-  "Message": "serial_no and print_by are required",
-  "data": null
-}
-```
+## 5) Get All Plant Codes 
+- **URL:** `${BACKEND_URL}/api/master/get-all-plant-code`
+- **Method:** GET
+- **Response (application/json) — type:** JSON array of plant code rows
 
-- **Serial not found**
-```json
-{
-  "Status": "F",
-  "Message": "Serial no not found."
-}
-```
+---
 
-- **Already printed**
-```json
-{
-  "Status": "F",
-  "Message": "Label already printed."
-}
-```
+> **Note:** The controllers currently call the stored procedures with a subset of fields. The SPs accept additional fields (`product_family`, `product_name`, `mrp`, etc.). If you want full compatibility, update the controllers to send these fields or make the SP parameters optional.
 
-- **500 Internal Server Error** (Database or server error)
-```json
-{
-  "Status": "F",
-  "Message": "Error message",
-  "data": null
-}
-```
+---
+
+*Generated by GitHub Copilot (Raptor mini — Preview)*

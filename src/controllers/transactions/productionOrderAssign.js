@@ -2,6 +2,23 @@ import { executeQuery, sql } from '../../config/db.js';
 import { SAP_PRODUCTION_ORDER_SERVICE } from '../../utils/constants.js';
 import https from 'https';
 
+// Helper to remove leading zeros from identifiers (returns '0' if all zeros)
+const trimLeadingZeros = (value) => {
+  if (value === null || value === undefined) return value;
+  const v = String(value);
+  const trimmed = v.replace(/^0+/, '');
+  return trimmed === '' ? '0' : trimmed;
+};
+
+// Format production order: trim leading zeros and left-pad with zeros to 12 characters
+const formatProductionOrder = (value) => {
+  if (value === null || value === undefined) return value;
+  const v = String(value).trim();
+  const stripped = v.replace(/^0+/, '');
+  const base = stripped === '' ? '0' : stripped;
+  return base.padStart(12, '0');
+};
+
 export const getProductionOrderDetails = async (req, res) => {
   const { production_order } = req.body;
 
@@ -32,8 +49,8 @@ export const getProductionOrderDetails = async (req, res) => {
         const transformedData = spResult
           .filter(row => row.order_number) // Keep only rows with actual data
           .map(row => ({
-            productionorder: row.order_number,
-            material: row.material_number,
+            productionorder: formatProductionOrder(row.order_number),
+            material: trimLeadingZeros(row.material_number),
             materialdescription: row.material_description,
             batch: row.batch_number,
             serialno: row.serial_no,
@@ -45,14 +62,79 @@ export const getProductionOrderDetails = async (req, res) => {
             basicenddate: row.basic_end_date, 
           }));
 
-        // SP returned data successfully, return it
-        return res.status(200).json({
-          Status: 'T',
-          Message: 'Production order details fetched from local database',
-          data: transformedData,
-        });
+        try {
+          const enrichedData = await Promise.all(
+            transformedData.map(async (item) => {
+              try {
+                const trimmedMaterial = trimLeadingZeros(item.material);
+                const matDetails = await executeQuery(
+                  `EXEC sp_label_printing_get_material_details @material_number`,
+                  [{ name: 'material_number', type: sql.NVarChar, value: trimmedMaterial }]
+                );
+                
+                // Check if SP returned empty result (material not in master)
+                if (!matDetails || matDetails.length === 0) {
+                  return {
+                    Status: 'F',
+                    Message: `Material ${trimmedMaterial} not found in material master`,
+                    data: null,
+                  };
+                }
+                
+                // Extract material-specific fields from SP result (skip Status/Message rows)
+                const matData = matDetails.find(row => row.product_name || row.material_description);
+                
+                if (!matData) {
+                  return {
+                    Status: 'F',
+                    Message: `Material ${trimmedMaterial} details not available in material master`,
+                    data: null,
+                  };
+                }
+                
+                return {
+                  ...item,
+                  product_name: matData.product_name,
+                  input_rating: matData.input_rating,
+                  product_url: matData.product_url,
+                };
+              } catch (error) {
+                console.error(`Error fetching material details for ${item.material}:`, error);
+                return {
+                  Status: 'F',
+                  Message: `Error fetching material ${item.material} details: ${error.message}`,
+                  data: null,
+                };
+              }
+            })
+          );
+
+          // Check if any enrichment returned error status
+          const errorItem = enrichedData.find(item => item.Status === 'F');
+          if (errorItem) {
+            return res.status(200).json({
+              Status: 'F',
+              Message: errorItem.Message,
+              data: null,
+            });
+          }
+
+          // SP returned data successfully, return it
+          return res.status(200).json({
+            Status: 'T',
+            Message: 'Production order details fetched from local database',
+            data: enrichedData,
+          });
+        } catch (error) {
+          console.error('Error enriching SP data with material details:', error);
+          return res.status(200).json({
+            Status: 'F',
+            Message: error.message || 'Error enriching production order details',
+            data: null,
+          });
+        }
       }
-    }
+  }
 
     // If SP returned 'F' or no data, call SAP API
     const sapUrl = `${SAP_PRODUCTION_ORDER_SERVICE.BASE_URL}?sap-client=${SAP_PRODUCTION_ORDER_SERVICE.SAP_CLIENT}`;
@@ -60,18 +142,97 @@ export const getProductionOrderDetails = async (req, res) => {
 
     if (sapResult && sapResult.length > 0) {
       // Add null values for local database fields that SAP doesn't provide
-      const enhancedSapResult = sapResult.map(item => ({
-        ...item,
-        assigned_date: null,
-        assigned_by: null,
-        assigned_line: null,
-      }));
-
-      return res.status(200).json({
-        Status: 'T',
-        Message: 'Production order details fetched from SAP',
-        data: enhancedSapResult,
+      const enhancedSapResult = sapResult.map(item => {
+        const obj = { ...item, assigned_date: null, assigned_by: null, assigned_line: null };
+        if (obj.productionorder) obj.productionorder = formatProductionOrder(obj.productionorder);
+        if (obj.productionOrder) obj.productionOrder = formatProductionOrder(obj.productionOrder);
+        if (obj.order_number) obj.order_number = formatProductionOrder(obj.order_number);
+        if (obj.material) obj.material = trimLeadingZeros(obj.material);
+        if (obj.materialNumber) obj.materialNumber = trimLeadingZeros(obj.materialNumber);
+        return obj;
       });
+
+      try {
+        // Fetch material details for each production order
+        const enrichedSapData = await Promise.all(
+          enhancedSapResult.map(async (item) => {
+            try {
+              // Get material identifier (try different possible field names)
+              const matNum = item.material || item.materialNumber || item.material_number;
+              if (!matNum) {
+                return {
+                  Status: 'F',
+                  Message: 'No material number found in production order',
+                  data: null,
+                };
+              }
+              
+              const trimmedMaterial = trimLeadingZeros(matNum);
+              const matDetails = await executeQuery(
+                `EXEC sp_label_printing_get_material_details @material_number`,
+                [{ name: 'material_number', type: sql.NVarChar, value: trimmedMaterial }]
+              );
+              
+              // Check if SP returned empty result (material not in master)
+              if (!matDetails || matDetails.length === 0) {
+                return {
+                  Status: 'F',
+                  Message: `Material ${trimmedMaterial} not found in material master`,
+                  data: null,
+                };
+              }
+              
+              // Extract material-specific fields from SP result (skip Status/Message rows)
+              const matData = matDetails.find(row => row.product_name || row.material_description);
+              
+              if (!matData) {
+                return {
+                  Status: 'F',
+                  Message: `Material ${trimmedMaterial} details not available in material master`,
+                  data: null,
+                };
+              }
+              
+              return {
+                ...item,
+                product_name: matData.product_name,
+                input_rating: matData.input_rating,
+                product_url: matData.product_url,
+              };
+            } catch (error) {
+              console.error(`Error fetching material details for SAP result:`, error);
+              return {
+                Status: 'F',
+                Message: `Error fetching material details: ${error.message}`,
+                data: null,
+              };
+            }
+          })
+        );
+
+        // Check if any enrichment returned error status
+        const errorItem = enrichedSapData.find(item => item.Status === 'F');
+        if (errorItem) {
+          return res.status(200).json({
+            Status: 'F',
+            Message: errorItem.Message,
+            data: null,
+          });
+        }
+
+        return res.status(200).json({
+          Status: 'T',
+          Message: 'Production order details fetched from SAP',
+          data: enrichedSapData,
+        });
+      } catch (error) {
+        console.error('Error enriching SAP data with material details:', error);
+        return res.status(200).json({
+          Status: 'F',
+          Message: error.message || 'Error enriching production order details',
+          data: null,
+        });
+      }
     }
 
     res.status(200).json({
